@@ -42,7 +42,16 @@ export function dividendEstimate(company, projectionTime, intrest, type) {
   const { avgDividendRatio, netBrowing, earnings } = companyJs;
   const dividendRatio = Math.min(avgDividendRatio, 0.8);
 
-  const estimationSeries = companyJs[type];
+  // console.log('companyJs', companyJs)
+
+  let estimationSeries
+  if(type === 'combo') {
+    estimationSeries = companyJs.earnings.map((e, i) => (e + companyJs.freeCashFlow[i]) / 2)
+  } else {
+    estimationSeries = companyJs[type];
+  }
+
+  // console.log('estimationSeries', estimationSeries)
 
   if(estimationSeries === undefined || estimationSeries.length < projectionTime) {
     return NaN

@@ -2,12 +2,12 @@ import React from 'react'
 import { Route, Redirect } from 'react-router'
 import axios from 'axios'
 import { fromJS } from 'immutable'
-import { Slider } from "@blueprintjs/core";
+import { Slider, Checkbox, Button } from "@blueprintjs/core";
 
 // import { AppContext } from './AppContext'
 import StockTable from "./Components/StockTable"
 import GraphInteractive from './Components/GraphInteractive'
-import { dividendEstimate, earningsEstimate } from './Services/statistics'
+import { dividendEstimate, earningsEstimate, leastSquarceEstimate } from './Services/statistics'
 
 // import Index from './views/Index';
 // import Company from './views/Company';
@@ -23,6 +23,10 @@ class Routes extends React.Component {
     estimateType: 'earnings',
     minimumFittDynamic: 0.2,
     minimumFitt: 0.2,
+    revenueGrowth: false,
+    earningsGrowth: false,
+    fittRange: [0, 1],
+
     companiesExternal: fromJS({}),
     companiesInternal: fromJS({
       // "NOVU": {
@@ -32,7 +36,7 @@ class Routes extends React.Component {
   }
 
   componentDidMount() {
-    axios.get("https://bofa.github.io/stocks/earnings.json")
+    axios.get("https://bofa.github.io/stock-prediction/earnings.json")
       .then(response => {
         const companiesAsObject = response.data
           .reduce((acc, cur, i) => {
@@ -47,9 +51,13 @@ class Routes extends React.Component {
   }
 
   render() {
-    const { companiesExternal, companiesInternal, estimateType, minimumFitt, minimumFittDynamic } = this.state
+    const { companiesExternal, companiesInternal, estimateType, minimumFitt, minimumFittDynamic, revenueGrowth, earningsGrowth, fittRange } = this.state
 
     const projectionTime = 5;
+    const estimationTime = 4;
+
+    // const revenueGrowth = true
+    // const earningsGrowth = true
 
     // console.log('state', this.state)
     // console.log('companiesInternal', companiesExternal.toJS(), companiesInternal.toJS())
@@ -59,16 +67,22 @@ class Routes extends React.Component {
     }
 
     const mergedCompanies = companiesExternal
-      .filter(company => company.getIn([estimateType]) && company.getIn([estimateType]).size >= projectionTime)
+      .filter(company => company.has('earnings') && company.get('earnings').size >= estimationTime )
+      // .filter(company => company.getIn([estimateType]) && company.getIn([estimateType]).size >= projectionTime)
       .map(company => {
         // const leverageType = ''
         // const [leverage, cost, type] = parseMargin(leverageType, company);
         
         const { estimate, fitt } = dividendEstimate(company, projectionTime, 0, estimateType)
 
+        const revenueLs  = leastSquarceEstimate(company.get('revenue').slice(-estimationTime).toJS())
+        const earningsLs = leastSquarceEstimate(company.get('earnings').slice(-estimationTime).toJS())
+
         return company
           .set('estimate', estimate / company.get('price') / company.getIn(['numberOfStocks', -1]))
           .set('fitt', fitt)
+          .set('revenueLs', fromJS(revenueLs))
+          .set('earningsLs', fromJS(earningsLs))
           // .set('estimate', dividendEstimate(company, projectionTime, 0) / company.get('price') / company.getIn(['numberOfStocks', -1]), 0)
           // .set('earningsEstimate', leverage*earningsEstimate(company, projectionTime) - cost)
           // .set('earningsEstimate', earningsEstimate(company, projectionTime))
@@ -76,9 +90,18 @@ class Routes extends React.Component {
           .set('pe', company.getIn(['price']) * company.getIn(['numberOfStocks', -1]) / company.getIn(['earnings', -1]))
           .set('borsdataLink', `https://borsdata.se/${company.get('CountryUrlName')}/nyckeltal`)
       })
+      .filter(company => !revenueGrowth || company.getIn(['revenueLs', 'slope']) > 0)
+      .filter(company => !earningsGrowth || company.getIn(['earningsLs', 'slope']) > 0)
       .mergeDeep(companiesInternal)
-      .filter(company => company.get('fitt') > minimumFitt)
+      .filter(company => company.get('fitt') >= fittRange[0] && company.get('fitt') <= fittRange[1])
       .toList()
+
+    // console.log('mergedCompanies', mergedCompanies.toJS())
+    console.log('revenueGrowth', revenueGrowth)
+
+    const filterSettings = {
+      fittRange,
+    }
 
     return [
       <nav class="bp3-navbar .modifier">
@@ -89,25 +112,16 @@ class Routes extends React.Component {
               <option value="earnings">Earnings</option>
               <option value="revenue">Revenue</option>
               <option value="freeCashFlow">Free Cash Flow</option>
+              <option value="combo">Combo</option>
             </select>
           </div>
-        </div>
-        <div class="bp3-navbar-group bp3-align-right">
-          <div>
-            <Slider
-              min={0}
-              max={1.0}
-              stepSize={0.01}
-              labelStepSize={0.14}
-              onChange={minimumFittDynamic => this.setState({ minimumFittDynamic })}
-              onRelease={minimumFitt => this.setState({ minimumFitt })}
-              labelRenderer={val => `${Math.round(val * 100)}%`}
-              value={minimumFittDynamic}
-            />
+          <div class="bp3-navbar-group">
+            <Checkbox checked={revenueGrowth} inline label="Revenue Growth" onChange={e => this.setState({ revenueGrowth: e.target.checked })} />
+            <Checkbox checked={earningsGrowth} inline label="Earnings Growth" onChange={e => this.setState({ earningsGrowth: e.target.checked })} />
           </div>
         </div>
       </nav>,
-      <Route path="/" exact render={props => <StockTable {...props} companies={mergedCompanies} />} />,
+      <Route path="/" exact render={props => <StockTable {...props} companies={mergedCompanies} {...filterSettings}  onChange={param => this.setState(param)} />} />,
       <Route path="/:id" exact render={props => <GraphInteractive {...props} companies={mergedCompanies} />} />
     ]
   }

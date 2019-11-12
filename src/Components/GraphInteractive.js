@@ -25,9 +25,17 @@ class Sample extends React.Component {
   }
 
   render() {
+    const { companies, match } = this.props
     const { historic, projection } = this.state
     const points = this.state.points
     
+    const company = companies.find(company => company.get('ShortName') === match.params.id)
+
+    console.log('props', this.props, match.params.id)
+    console.log('state', this.state)
+    console.log('companies', companies.toJS())
+    console.log('company', company)
+
     const maxValue = Math.max(0, ...historic.flat(), ...projection.flat())
     const minValue = Math.min(0, ...historic.flat(), ...projection.flat())
 
@@ -63,7 +71,8 @@ class Sample extends React.Component {
             x2={points[1].x} y2={points[1].y}
             fill="transparent"
             stroke="gray"
-            strokeWidth="2"
+            strokeWidth="4"
+            strokeDasharray="5,5"
             key="line"
           />
           {points.map((point, i) =>
