@@ -26,6 +26,9 @@ class Routes extends React.Component {
     revenueGrowth: false,
     earningsGrowth: false,
     fittRange: [0, 1],
+    dividendRatioRange: [0, 1],
+    peRange: [0, 100],
+    yieldRange: [0, 2],
 
     companiesExternal: fromJS({}),
     companiesInternal: fromJS({
@@ -51,7 +54,7 @@ class Routes extends React.Component {
   }
 
   render() {
-    const { companiesExternal, companiesInternal, estimateType, minimumFitt, minimumFittDynamic, revenueGrowth, earningsGrowth, fittRange } = this.state
+    const { companiesExternal, companiesInternal, estimateType, minimumFitt, minimumFittDynamic, revenueGrowth, earningsGrowth, fittRange, dividendRatioRange, peRange, yieldRange } = this.state
 
     const projectionTime = 5;
     const estimationTime = 4;
@@ -94,13 +97,15 @@ class Routes extends React.Component {
       .filter(company => !earningsGrowth || company.getIn(['earningsLs', 'slope']) > 0)
       .mergeDeep(companiesInternal)
       .filter(company => company.get('fitt') >= fittRange[0] && company.get('fitt') <= fittRange[1])
+      .filter(company => company.get('pe') >= peRange[0] && company.get('pe') <= peRange[1])
+      .filter(company => company.get('yield') >= yieldRange[0] && company.get('yield') <= yieldRange[1])
+      .filter(company => company.get('avgDividendRatio') >= dividendRatioRange[0] && company.get('avgDividendRatio') <= dividendRatioRange[1])
       .toList()
 
-    // console.log('mergedCompanies', mergedCompanies.toJS())
-    console.log('revenueGrowth', revenueGrowth)
+    console.log('mergedCompanies', mergedCompanies.toJS())
 
     const filterSettings = {
-      fittRange,
+      fittRange, dividendRatioRange, peRange, yieldRange
     }
 
     return [
