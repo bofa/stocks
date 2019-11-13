@@ -28,7 +28,7 @@ class Routes extends React.Component {
     fittRange: [0, 1],
     dividendRatioRange: [0, 1],
     peRange: [0, 100],
-    yieldRange: [0, 2],
+    yieldRange: [0, 0.2],
 
     companiesExternal: fromJS({}),
     companiesInternal: fromJS({

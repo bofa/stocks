@@ -70,9 +70,9 @@ function component (props) {
               value={yieldRange}
               onChange={yieldRange => onChange({ yieldRange })} 
               min={0}
-              max={2}
+              max={0.2}
               stepSize={0.01}
-              labelStepSize={0.5}
+              labelStepSize={0.02}
               vertical
             />
           </th>
@@ -121,6 +121,12 @@ function component (props) {
             <td>
               <AnchorButton
                 href={company.get('borsdataLink')}
+                rightIcon="share"
+                target="_blank"
+                minimal
+              />
+              <AnchorButton
+                href={'/#/' + company.get('CountryShortName')}
                 rightIcon="share"
                 target="_blank"
                 minimal
