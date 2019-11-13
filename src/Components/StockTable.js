@@ -1,8 +1,10 @@
 import React, { memo } from 'react';
 import { immutableMemo } from 'react-immutable-pure-component'
-import { Cell, Column, Table } from "@blueprintjs/table";
-import { AnchorButton, Button, Popover, Menu, RangeSlider } from "@blueprintjs/core";
+// import { Cell, Column, Table } from "@blueprintjs/table";
+import { AnchorButton, Button, Popover, RangeSlider } from "@blueprintjs/core"
 // import { AppContext } from '../AppContext';
+
+import PopupSlider from './PopupSlider'
  
 function openLink(target) {
   var win = window.open(target.get('borsdataLink')) // , '_blank');
@@ -15,7 +17,7 @@ function component (props) {
 
   // console.log('table state', this.state, this.props, this.context)
 
-  const { companies, onChange, fittRange } = props;
+  const { companies, onChange, fittRange, dividendRatioRange, peRange, yieldRange } = props;
 
   // console.log('companies', companies)
 
@@ -38,7 +40,7 @@ function component (props) {
 
   // console.log('companies', renderData.toJS())
 
-  const filterSlider = (
+  const sortToggler = (range, stateName) => (
     <Popover content={
       <div width={200} style={{ padding: 10 }}>
         <RangeSlider
@@ -46,26 +48,8 @@ function component (props) {
           max={1}
           stepSize={0.1}
           labelStepSize={0.1}
-          onChange={fittRange => onChange({ fittRange })}
-          value={fittRange}
-          vertical
-          />
-      </div>}
-    >
-      <Button icon="filter" minimal />
-    </Popover>
-  )
-
-  const sortToggler = (
-    <Popover content={
-      <div width={200} style={{ padding: 10 }}>
-        <RangeSlider
-          min={0}
-          max={1}
-          stepSize={0.1}
-          labelStepSize={0.1}
-          onChange={fittRange => onChange({ fittRange })}
-          value={fittRange}
+          onChange={range => onChange({ [stateName]: range })}
+          value={range}
           vertical
           />
       </div>}
@@ -80,19 +64,63 @@ function component (props) {
         <tr>
           <th>Name</th>
           <th>Estimate</th>
-          <th>Yield</th>
-          <th>P/E</th>
-          <th>Avg Dividend Ratio</th>
-          <th>Model fitt {filterSlider}</th>
+          <th>
+            Yield
+            <PopupSlider
+              value={yieldRange}
+              onChange={yieldRange => onChange({ yieldRange })} 
+              min={0}
+              max={2}
+              stepSize={0.01}
+              labelStepSize={0.5}
+              vertical
+            />
+          </th>
+          <th>
+            P/E
+            <PopupSlider
+              value={peRange}
+              onChange={peRange => onChange({ peRange })} 
+              min={-100}
+              max={100}
+              stepSize={1}
+              labelStepSize={20}
+              vertical
+            />
+          </th>
+          <th>
+            Avg Div Ratio
+            <PopupSlider
+              value={dividendRatioRange}
+              onChange={dividendRatioRange => onChange({ dividendRatioRange })} 
+              min={0}
+              max={2}
+              stepSize={0.1}
+              labelStepSize={0.1}
+              vertical
+            />
+          </th>
+          <th>
+            Model fitt
+            <PopupSlider
+              value={fittRange}
+              onChange={fittRange => onChange({ fittRange })} 
+              min={0}
+              max={1}
+              stepSize={0.1}
+              labelStepSize={0.2}
+              vertical
+            />
+          </th>
           <th>Momentum 90</th>
         </tr>
       </thead>
       <tbody>
-        {renderData.map(company => 
-          <tr>
+        {renderData.map((company, i) => 
+          <tr key={i}>
             <td>
               <AnchorButton
-                href={renderData.get('borsdataLink')}
+                href={company.get('borsdataLink')}
                 rightIcon="share"
                 target="_blank"
                 minimal
