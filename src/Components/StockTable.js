@@ -87,7 +87,7 @@ function component (props) {
                 minimal
               />
               <AnchorButton
-                onClick={() => history.push(company.get('CountryShortName'))}
+                onClick={() => history.push(company.get('ShortName'))}
                 // onClick={handleClick}
                 // href={company.get('CountryShortName')}
                 rightIcon="share"

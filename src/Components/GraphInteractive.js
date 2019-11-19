@@ -1,5 +1,6 @@
-import React from 'react';
+import React from 'react'
 import { AppContext } from '../AppContext'
+import { List } from 'immutable'
 
 // https://codepen.io/nasrullahs/pen/QKYZdO
 
@@ -14,8 +15,8 @@ class Sample extends React.Component {
   constructor() {
     super();
     this.state = {
-      historic: [[100, 8, -10], [10, 8, -10], [30, -100, 15]],
-      projection: [[10, 18], [12, 10], [-10, 10], [10, 10*Math.random()]],
+      // historic: [[100, 8, -10], [10, 8, -10], [30, -100, 15]],
+      // projection: [[10, 18], [12, 10], [-10, 10], [10, 10*Math.random()]],
 
       points: [
         { x: 30, y: 900 },
@@ -26,15 +27,23 @@ class Sample extends React.Component {
 
   render() {
     const { companies, match } = this.props
-    const { historic, projection } = this.state
+    // const { historic, projection } = this.state
     const points = this.state.points
-    
+
     const company = companies.find(company => company.get('ShortName') === match.params.id)
 
     console.log('props', this.props, match.params.id)
     console.log('state', this.state)
-    console.log('companies', companies.toJS())
-    console.log('company', company)
+    // console.log('companies', companies.toJS())
+    console.log('company', company.toJS())
+    console.log('company.get(revenue)', company.get('revenue').toJS())
+
+    const historic = company.get('revenue')
+      .map((r, i) => List([r, company.getIn(['earnings', i]), company.getIn(['freeCashFlow', i])]))
+      .toJS()
+    const projection = []
+
+    console.log('historic', historic)
 
     const maxValue = Math.max(0, ...historic.flat(), ...projection.flat())
     const minValue = Math.min(0, ...historic.flat(), ...projection.flat())
