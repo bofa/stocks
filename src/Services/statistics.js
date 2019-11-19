@@ -69,16 +69,16 @@ export function yearsToPayOff(company) {
   const { earningsLs, avgDividendRatio, price } = company.toJS();
   const dividendRatio = Math.min(avgDividendRatio, 0.8);
 
-  const [bias, slop, cov] = earningsLs;
+  const [bias, slop] = earningsLs;
   return price / dividendRatio / (bias + slop/2);
 }
 
 export function getProjection(company, projectionTime, type = 'earningCashFlowMergeLs') {
   const companyJs = company.toJS();
-  const { avgDividendRatio, netBrowing } = companyJs;
+  const { avgDividendRatio } = companyJs;
   const dividendRatio = Math.min(avgDividendRatio, 0.8);
 
-  const [bias, slop, cov] = companyJs[type];
+  const [bias, slop] = companyJs[type];
   return Array.from(Array(projectionTime), (e,i) => ({
     year: 'Not Set',
     revenue: 0,

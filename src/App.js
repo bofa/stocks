@@ -1,13 +1,13 @@
 import React from 'react'
-import { Route, Redirect } from 'react-router'
+import { Route } from 'react-router'
 import axios from 'axios'
 import { fromJS } from 'immutable'
-import { Slider, Checkbox, Button } from "@blueprintjs/core";
+import { Slider, Checkbox, Button, Popover } from "@blueprintjs/core";
 
 // import { AppContext } from './AppContext'
 import StockTable from "./Components/StockTable"
 import GraphInteractive from './Components/GraphInteractive'
-import { dividendEstimate, earningsEstimate, leastSquarceEstimate } from './Services/statistics'
+import { dividendEstimate, leastSquarceEstimate } from './Services/statistics'
 
 // import Index from './views/Index';
 // import Company from './views/Company';
@@ -29,6 +29,9 @@ class Routes extends React.Component {
     dividendRatioRange: [0, 1],
     peRange: [0, 100],
     yieldRange: [0, 0.2],
+    projectionTime: 5,
+    estimationTime: 4,
+
 
     companiesExternal: fromJS({}),
     companiesInternal: fromJS({
@@ -54,10 +57,7 @@ class Routes extends React.Component {
   }
 
   render() {
-    const { companiesExternal, companiesInternal, estimateType, minimumFitt, minimumFittDynamic, revenueGrowth, earningsGrowth, fittRange, dividendRatioRange, peRange, yieldRange } = this.state
-
-    const projectionTime = 5;
-    const estimationTime = 4;
+    const { projectionTime, estimationTime, companiesExternal, companiesInternal, estimateType, revenueGrowth, earningsGrowth, fittRange, dividendRatioRange, peRange, yieldRange } = this.state
 
     // const revenueGrowth = true
     // const earningsGrowth = true
@@ -109,10 +109,10 @@ class Routes extends React.Component {
     }
 
     return [
-      <nav class="bp3-navbar .modifier">
-        <div class="bp3-navbar-group bp3-align-left">
-          <div class="bp3-navbar-heading">Prediction</div>
-          <div class="bp3-select .modifier">
+      <nav className="bp3-navbar .modifier" key="navbar">
+        <div className="bp3-navbar-group bp3-align-left">
+          <div className="bp3-navbar-heading">Prediction</div>
+          <div className="bp3-select .modifier">
             <select value={estimateType} onChange={event => this.setState({ estimateType: event.currentTarget.value })}>
               <option value="earnings">Earnings</option>
               <option value="revenue">Revenue</option>
@@ -120,14 +120,52 @@ class Routes extends React.Component {
               <option value="combo">Combo</option>
             </select>
           </div>
-          <div class="bp3-navbar-group">
+          <div className="bp3-navbar-group">
             <Checkbox checked={revenueGrowth} inline label="Revenue Growth" onChange={e => this.setState({ revenueGrowth: e.target.checked })} />
             <Checkbox checked={earningsGrowth} inline label="Earnings Growth" onChange={e => this.setState({ earningsGrowth: e.target.checked })} />
           </div>
+          <div>
+            <Popover content={
+              <div width={200} style={{ padding: 10 }}>
+                <Slider
+                  value={estimationTime}
+                  onChange={estimationTime => this.setState({ estimationTime })} 
+                  min={2}
+                  max={10}
+                  stepSize={1}
+                  labelStepSize={2}
+                  vertical
+                  />
+              </div>}
+            >
+              <Button icon="filter" minimal >
+                {estimationTime} Est Time
+              </Button>
+            </Popover>
+          </div>
+          <div>
+            <Popover content={
+              <div width={200} style={{ padding: 10 }}>
+                <Slider
+                  value={projectionTime}
+                  onChange={projectionTime => this.setState({ projectionTime })} 
+                  min={2}
+                  max={10}
+                  stepSize={1}
+                  labelStepSize={2}
+                  vertical
+                  />
+              </div>}
+            >
+              <Button icon="filter" minimal>
+                {projectionTime} Proj Time
+              </Button>
+            </Popover>
+          </div>
         </div>
       </nav>,
-      <Route path="/" exact render={props => <StockTable {...props} companies={mergedCompanies} {...filterSettings}  onChange={param => this.setState(param)} />} />,
-      <Route path="/:id" exact render={props => <GraphInteractive {...props} companies={mergedCompanies} />} />
+      <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={mergedCompanies} {...filterSettings} onChange={param => this.setState(param)} />} />,
+      <Route key="routeGraph" path="/:id" exact render={props => <GraphInteractive key="graph" {...props} companies={mergedCompanies} />} />
     ]
   }
 }
