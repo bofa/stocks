@@ -1,10 +1,10 @@
 import React from 'react'
 import { AppContext } from '../AppContext'
-import { List } from 'immutable'
+import { fromJS } from 'immutable'
 
 // https://codepen.io/nasrullahs/pen/QKYZdO
 
-const paddingGroups = 50;
+const paddingGroups = 40;
 const viewBoxWidth = 1200;
 const viewBoxHeigth = 1000;
 
@@ -39,14 +39,29 @@ class Sample extends React.Component {
     console.log('company.get(revenue)', company.get('revenue').toJS())
 
     const historic = company.get('revenue')
-      .map((r, i) => List([r, company.getIn(['earnings', i]), company.getIn(['freeCashFlow', i])]))
+      .map((r, i) => fromJS([
+        {
+          value: r,
+          fill: r > 0 ? '#123456' : 'red',
+        }, {
+          value: company.getIn(['freeCashFlow', i]),
+          fill: company.getIn(['freeCashFlow', i]) > 0 ? '#0eefcd' : 'red',
+        }, {
+          value: company.getIn(['earnings', i]),
+          fill: company.getIn(['earnings', i]) > 0 ? '#035C43' : 'red',
+        }
+      ]))
       .toJS()
-    const projection = []
 
-    console.log('historic', historic)
+    const projection = company.get('estimateVector')
+      .map(v =>fromJS([{ value: v, fill: v > 0 ? "#035C43" : "#ff0000" }]))
+      .toJS()
 
-    const maxValue = Math.max(0, ...historic.flat(), ...projection.flat())
-    const minValue = Math.min(0, ...historic.flat(), ...projection.flat())
+    const values = historic.concat(projection).flat().map(g => g.value)
+    console.log('historic', historic, projection)
+
+    const maxValue = Math.max(0, ...values)
+    const minValue = Math.min(0, ...values)
 
     const yScaleFactor = viewBoxHeigth/(maxValue - minValue)
     const zeroLevel = maxValue*yScaleFactor
@@ -59,17 +74,17 @@ class Sample extends React.Component {
       .map((historicGroup, historicGroupIndex) =>
       historicGroup.map((historicBar, historicBarIndex) => ({
         x: paddingGroups*(historicGroupIndex) + groupWidth*(historicGroupIndex + historicBarIndex/historicGroup.length),
-        y: historicBar > 0 ? zeroLevel - historicBar*yScaleFactor : zeroLevel,
+        y: historicBar.value > 0 ? zeroLevel - historicBar.value*yScaleFactor : zeroLevel,
         width: 10,
-        height: Math.abs(historicBar)*yScaleFactor,
-        fill: historicBar > 0 ? 'blue': 'red',
+        height: Math.abs(historicBar.value)*yScaleFactor,
+        fill: historicBar.fill,
       })))
       .flat()  
 
     console.log('historicBars', yScaleFactor, historicBars)
 
     return (
-      <div>
+      <div style={{ margin: 20}}>
         <svg width="100%" height="100%" viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeigth}`} ref={(svg) => this.svg = svg}>
           {historicBars.map((bar, i) => 
             <rect {...bar} key={i}

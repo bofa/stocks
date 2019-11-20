@@ -76,13 +76,14 @@ class Routes extends React.Component {
         // const leverageType = ''
         // const [leverage, cost, type] = parseMargin(leverageType, company);
         
-        const { estimate, fitt } = dividendEstimate(company, projectionTime, 0, estimateType)
+        const { estimate, fitt, estimateVector } = dividendEstimate(company, projectionTime, 0, estimateType)
 
         const revenueLs  = leastSquarceEstimate(company.get('revenue').slice(-estimationTime).toJS())
         const earningsLs = leastSquarceEstimate(company.get('earnings').slice(-estimationTime).toJS())
 
         return company
           .set('estimate', estimate / company.get('price') / company.getIn(['numberOfStocks', -1]))
+          .set('estimateVector', fromJS(estimateVector))
           .set('fitt', fitt)
           .set('revenueLs', fromJS(revenueLs))
           .set('earningsLs', fromJS(earningsLs))

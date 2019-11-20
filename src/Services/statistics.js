@@ -34,7 +34,8 @@ export function leastSquarceEstimate(values) {
 export function earningsEstimate(earningsLs, netBrowing, projectionTime, intrest=0) {
   const { biasEnd, slope } = earningsLs;
 
-  return (biasEnd + projectionTime*slope/2 - Math.max(netBrowing, 0)*intrest);
+  // return (biasEnd + projectionTime*slope/2 - Math.max(netBrowing, 0)*intrest);
+  return new Array(projectionTime).fill(0).map((v, i) => biasEnd + slope*i)
 }
 
 export function dividendEstimate(company, projectionTime, intrest, type) {
@@ -58,10 +59,13 @@ export function dividendEstimate(company, projectionTime, intrest, type) {
   }
 
   const typeLs = leastSquarceEstimate(estimationSeries.slice(earnings.length-projectionTime, earnings.length))
+  const earningsEstimateVector = earningsEstimate(typeLs, netBrowing, projectionTime, intrest)
+  const dividendEstimateVector = earningsEstimateVector.map(v => dividendRatio*v)
 
   return {
-    estimate: dividendRatio * earningsEstimate(typeLs, netBrowing, projectionTime, intrest),
+    estimate: dividendEstimateVector.reduce((s, v) => s+v) / projectionTime,
     fitt: typeLs.fitt,
+    estimateVector: dividendEstimateVector,
   }
 }
 
