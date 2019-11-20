@@ -48,7 +48,10 @@ class Sample extends React.Component {
           fill: company.getIn(['freeCashFlow', i]) > 0 ? '#0eefcd' : 'red',
         }, {
           value: company.getIn(['earnings', i]),
-          fill: company.getIn(['earnings', i]) > 0 ? '#035C43' : 'red',
+          fill: company.getIn(['earnings', i]) > 0 ? '#2d578b' : 'red',
+        }, {
+          value: company.getIn(['dividend', i]),
+          fill: company.getIn(['dividend', i]) > 0 ? '#035C43' : 'red',
         }
       ]))
       .toJS()

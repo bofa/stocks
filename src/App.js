@@ -21,10 +21,8 @@ class Routes extends React.Component {
   state = {
     selected: 'avanza',
     estimateType: 'earnings',
-    minimumFittDynamic: 0.2,
-    minimumFitt: 0.2,
-    revenueGrowth: false,
-    earningsGrowth: false,
+    revenueGrowth: true,
+    earningsGrowth: true,
     fittRange: [0, 1],
     dividendRatioRange: [0, 1],
     peRange: [0, 100],
