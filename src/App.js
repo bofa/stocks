@@ -2,7 +2,7 @@ import React from 'react'
 import { Route } from 'react-router'
 import axios from 'axios'
 import { fromJS } from 'immutable'
-import { Slider, Checkbox, Button, Popover } from "@blueprintjs/core";
+import { Slider, Checkbox, Button, Popover, Navbar } from "@blueprintjs/core";
 
 // import { AppContext } from './AppContext'
 import StockTable from "./Components/StockTable"
@@ -107,22 +107,20 @@ class Routes extends React.Component {
     }
 
     return [
-      <nav className="bp3-navbar .modifier" key="navbar">
-        <div className="bp3-navbar-group bp3-align-left">
-          <div className="bp3-navbar-heading">Prediction</div>
-          <div className="bp3-select .modifier">
+      <Navbar>
+        <Navbar.Group align="left">
+            <Navbar.Heading>Stock Prediction</Navbar.Heading>
+            <Navbar.Divider />
             <select value={estimateType} onChange={event => this.setState({ estimateType: event.currentTarget.value })}>
               <option value="earnings">Earnings</option>
               <option value="revenue">Revenue</option>
               <option value="freeCashFlow">Free Cash Flow</option>
               <option value="combo">Combo</option>
             </select>
-          </div>
-          <div className="bp3-navbar-group">
+
             <Checkbox checked={revenueGrowth} inline label="Revenue Growth" onChange={e => this.setState({ revenueGrowth: e.target.checked })} />
             <Checkbox checked={earningsGrowth} inline label="Earnings Growth" onChange={e => this.setState({ earningsGrowth: e.target.checked })} />
-          </div>
-          <div>
+
             <Popover content={
               <div width={200} style={{ padding: 10 }}>
                 <Slider
@@ -140,8 +138,7 @@ class Routes extends React.Component {
                 {estimationTime} Est Time
               </Button>
             </Popover>
-          </div>
-          <div>
+
             <Popover content={
               <div width={200} style={{ padding: 10 }}>
                 <Slider
@@ -159,9 +156,10 @@ class Routes extends React.Component {
                 {projectionTime} Proj Time
               </Button>
             </Popover>
-          </div>
-        </div>
-      </nav>,
+
+        </Navbar.Group>
+      </Navbar>,
+
       <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={mergedCompanies} {...filterSettings} onChange={param => this.setState(param)} />} />,
       <Route key="routeGraph" path="/:id" exact render={props => <GraphInteractive key="graph" {...props} estimationTime={estimationTime} projectionTime={projectionTime} companies={mergedCompanies} />} />
     ]

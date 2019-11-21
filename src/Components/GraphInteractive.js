@@ -1,6 +1,7 @@
 import React from 'react'
-import { AppContext } from '../AppContext'
 import { fromJS } from 'immutable'
+import { AppContext } from '../AppContext'
+import NavbarInteractiveGraph from './NavbarInteractiveGraph'
 
 // https://codepen.io/nasrullahs/pen/QKYZdO
 
@@ -33,10 +34,10 @@ class Sample extends React.Component {
     const company = companies.find(company => company.get('ShortName') === match.params.id)
     const estimateFunc = company.get('estimateFunc')
 
-    // console.log('props', this.props, match.params.id)
+    console.log('props', this.props, match.params.id)
     // console.log('state', this.state)
     // console.log('companies', companies.toJS())
-    // console.log('company', company.get('estimateFunc')(0), company.toJS())
+    console.log('company', company.toJS())
     // console.log('company.get(revenue)', company.get('revenue').toJS())
 
     const historic = company.get('revenue')
@@ -101,34 +102,37 @@ class Sample extends React.Component {
     console.log('line', startLineN, stopLineN, startLine, stopLine)
 
     return (
-      <div style={{ margin: 20}}>
-        <svg width="100%" height="100%" viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeigth}`} ref={(svg) => this.svg = svg}>
-          {historicBars.map((bar, i) => 
-            <rect {...bar} key={i}
-            ></rect>
-          )}
-          <line
-            x1={startLine.x} y1={startLine.y}
-            x2={stopLine.x} y2={stopLine.y}
-            fill="transparent"
-            stroke="gray"
-            strokeWidth="4"
-            strokeDasharray="5,5"
-            key="line"
-          />
-          {points.map((point, i) =>
-            <g transform="translate(-15, -15)" key={i}>
-              <rect
-                x={point.x}
-                y={point.y}
-                key={i}
-                width="30"
-                height="30"
-                onMouseDown={(e) => this.startDrag(e, i)}
-              />
-            </g>
-          )}
-        </svg>
+      <div>
+        <NavbarInteractiveGraph name={company.get('Name')} estimate={company.get('estimate')} onHome={() => this.props.history.goBack()} />
+        <div style={{ margin: 20}}>
+          <svg width="100%" height="100%" viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeigth}`} ref={(svg) => this.svg = svg}>
+            {historicBars.map((bar, i) => 
+              <rect {...bar} key={i}
+              ></rect>
+            )}
+            <line
+              x1={startLine.x} y1={startLine.y}
+              x2={stopLine.x} y2={stopLine.y}
+              fill="transparent"
+              stroke="gray"
+              strokeWidth="4"
+              strokeDasharray="5,5"
+              key="line"
+            />
+            {points.map((point, i) =>
+              <g transform="translate(-15, -15)" key={i}>
+                <rect
+                  x={point.x}
+                  y={point.y}
+                  key={i}
+                  width="30"
+                  height="30"
+                  onMouseDown={(e) => this.startDrag(e, i)}
+                />
+              </g>
+            )}
+          </svg>
+        </div>
       </div>
     )
   }
