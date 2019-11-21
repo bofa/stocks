@@ -90,7 +90,7 @@ function component (props) {
                 onClick={() => history.push(company.get('ShortName'))}
                 // onClick={handleClick}
                 // href={company.get('CountryShortName')}
-                rightIcon="share"
+                rightIcon="grouped-bar-chart"
                 target="_blank"
                 minimal
               >

@@ -35,10 +35,12 @@ export function earningsEstimate(earningsLs, netBrowing, projectionTime, intrest
   const { biasEnd, slope } = earningsLs;
 
   // return (biasEnd + projectionTime*slope/2 - Math.max(netBrowing, 0)*intrest);
-  return new Array(projectionTime).fill(0).map((v, i) => biasEnd + slope*i)
+  // return new Array(projectionTime).fill(0).map((v, i) => biasEnd + slope*i)
+
+  return (time) => biasEnd + slope*(time + 1)
 }
 
-export function dividendEstimate(company, projectionTime, intrest, type) {
+export function dividendEstimate(company, projectionTime, intrest, type, estimationTime) {
   const companyJs = company.toJS();
   const { avgDividendRatio, netBrowing, earnings } = companyJs;
   const dividendRatio = Math.min(avgDividendRatio, 0.8);
@@ -54,18 +56,20 @@ export function dividendEstimate(company, projectionTime, intrest, type) {
 
   // console.log('estimationSeries', estimationSeries)
 
-  if(estimationSeries === undefined || estimationSeries.length < projectionTime) {
+  if(estimationSeries === undefined || estimationSeries.length < estimationTime) {
     return NaN
   }
 
-  const typeLs = leastSquarceEstimate(estimationSeries.slice(earnings.length-projectionTime, earnings.length))
-  const earningsEstimateVector = earningsEstimate(typeLs, netBrowing, projectionTime, intrest)
-  const dividendEstimateVector = earningsEstimateVector.map(v => dividendRatio*v)
+  const typeLs = leastSquarceEstimate(estimationSeries.slice(earnings.length-estimationTime, earnings.length))
+  const earningsEstimateFunc = earningsEstimate(typeLs, netBrowing, projectionTime, intrest)
+  
+  const dividendEstimateVector = new Array(projectionTime).fill(0).map((v, i) => dividendRatio*earningsEstimateFunc(i))
+  const estimateFunc = (t) => dividendRatio*earningsEstimateFunc(t)
 
   return {
     estimate: dividendEstimateVector.reduce((s, v) => s+v) / projectionTime,
     fitt: typeLs.fitt,
-    estimateVector: dividendEstimateVector,
+    estimateFunc,
   }
 }
 

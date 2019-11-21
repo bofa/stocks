@@ -30,7 +30,6 @@ class Routes extends React.Component {
     projectionTime: 5,
     estimationTime: 4,
 
-
     companiesExternal: fromJS({}),
     companiesInternal: fromJS({
       // "NOVU": {
@@ -74,14 +73,14 @@ class Routes extends React.Component {
         // const leverageType = ''
         // const [leverage, cost, type] = parseMargin(leverageType, company);
         
-        const { estimate, fitt, estimateVector } = dividendEstimate(company, projectionTime, 0, estimateType)
+        const { estimate, fitt, estimateFunc } = dividendEstimate(company, projectionTime, 0, estimateType, estimationTime)
 
         const revenueLs  = leastSquarceEstimate(company.get('revenue').slice(-estimationTime).toJS())
         const earningsLs = leastSquarceEstimate(company.get('earnings').slice(-estimationTime).toJS())
 
         return company
           .set('estimate', estimate / company.get('price') / company.getIn(['numberOfStocks', -1]))
-          .set('estimateVector', fromJS(estimateVector))
+          .set('estimateFunc', estimateFunc)
           .set('fitt', fitt)
           .set('revenueLs', fromJS(revenueLs))
           .set('earningsLs', fromJS(earningsLs))
@@ -164,7 +163,7 @@ class Routes extends React.Component {
         </div>
       </nav>,
       <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={mergedCompanies} {...filterSettings} onChange={param => this.setState(param)} />} />,
-      <Route key="routeGraph" path="/:id" exact render={props => <GraphInteractive key="graph" {...props} companies={mergedCompanies} />} />
+      <Route key="routeGraph" path="/:id" exact render={props => <GraphInteractive key="graph" {...props} estimationTime={estimationTime} projectionTime={projectionTime} companies={mergedCompanies} />} />
     ]
   }
 }

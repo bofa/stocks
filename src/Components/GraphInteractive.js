@@ -26,17 +26,18 @@ class Sample extends React.Component {
   }
 
   render() {
-    const { companies, match } = this.props
+    const { companies, match, projectionTime, estimationTime } = this.props
     // const { historic, projection } = this.state
     const points = this.state.points
 
     const company = companies.find(company => company.get('ShortName') === match.params.id)
+    const estimateFunc = company.get('estimateFunc')
 
-    console.log('props', this.props, match.params.id)
-    console.log('state', this.state)
+    // console.log('props', this.props, match.params.id)
+    // console.log('state', this.state)
     // console.log('companies', companies.toJS())
-    console.log('company', company.toJS())
-    console.log('company.get(revenue)', company.get('revenue').toJS())
+    // console.log('company', company.get('estimateFunc')(0), company.toJS())
+    // console.log('company.get(revenue)', company.get('revenue').toJS())
 
     const historic = company.get('revenue')
       .map((r, i) => fromJS([
@@ -56,12 +57,12 @@ class Sample extends React.Component {
       ]))
       .toJS()
 
-    const projection = company.get('estimateVector')
-      .map(v =>fromJS([{ value: v, fill: v > 0 ? "#035C43" : "#ff0000" }]))
-      .toJS()
+    const projection = new Array(projectionTime)
+      .fill(0)
+      .map((v, i) => estimateFunc(i))
+      .map(v => [{ value: v, fill: v > 0 ? "#035C43" : "#ff0000" }])
 
     const values = historic.concat(projection).flat().map(g => g.value)
-    console.log('historic', historic, projection)
 
     const maxValue = Math.max(0, ...values)
     const minValue = Math.min(0, ...values)
@@ -71,6 +72,11 @@ class Sample extends React.Component {
 
     const groups = historic.length + projection.length
     const groupWidth = (viewBoxWidth - paddingGroups * groups) / groups
+
+    const transform = (x, y) => ({
+      x: paddingGroups*(x) + groupWidth*(x + 0.5),
+      y: zeroLevel - y*yScaleFactor,
+    })
 
     const historicBars = historic
       .concat(projection)
@@ -86,6 +92,14 @@ class Sample extends React.Component {
 
     console.log('historicBars', yScaleFactor, historicBars)
 
+    const startLineN = historic.length - estimationTime
+    const stopLineN = historic.length + projectionTime
+
+    const startLine = transform(startLineN, estimateFunc(-estimationTime))
+    const stopLine = transform(stopLineN, estimateFunc(projectionTime))
+
+    console.log('line', startLineN, stopLineN, startLine, stopLine)
+
     return (
       <div style={{ margin: 20}}>
         <svg width="100%" height="100%" viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeigth}`} ref={(svg) => this.svg = svg}>
@@ -94,8 +108,8 @@ class Sample extends React.Component {
             ></rect>
           )}
           <line
-            x1={points[0].x} y1={points[0].y}
-            x2={points[1].x} y2={points[1].y}
+            x1={startLine.x} y1={startLine.y}
+            x2={stopLine.x} y2={stopLine.y}
             fill="transparent"
             stroke="gray"
             strokeWidth="4"
