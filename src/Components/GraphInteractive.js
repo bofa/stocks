@@ -103,7 +103,7 @@ class Sample extends React.Component {
 
     return (
       <div>
-        <NavbarInteractiveGraph name={company.get('Name')} estimate={company.get('estimate')} onHome={() => this.props.history.goBack()} />
+        <NavbarInteractiveGraph company={company} onHome={() => this.props.history.goBack()} />
         <div style={{ margin: 20}}>
           <svg width="100%" height="100%" viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeigth}`} ref={(svg) => this.svg = svg}>
             {historicBars.map((bar, i) => 
