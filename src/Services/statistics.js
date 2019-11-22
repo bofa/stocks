@@ -63,11 +63,9 @@ export function dividendEstimate(company, projectionTime, intrest, type, estimat
   const typeLs = leastSquarceEstimate(estimationSeries.slice(earnings.length-estimationTime, earnings.length))
   const earningsEstimateFunc = earningsEstimate(typeLs, netBrowing, projectionTime, intrest)
   
-  const dividendEstimateVector = new Array(projectionTime).fill(0).map((v, i) => dividendRatio*earningsEstimateFunc(i))
   const estimateFunc = (t) => dividendRatio*earningsEstimateFunc(t)
 
   return {
-    estimate: dividendEstimateVector.reduce((s, v) => s+v) / projectionTime,
     fitt: typeLs.fitt,
     estimateFunc,
   }

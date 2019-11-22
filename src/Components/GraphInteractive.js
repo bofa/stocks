@@ -19,25 +19,24 @@ class Sample extends React.Component {
       // historic: [[100, 8, -10], [10, 8, -10], [30, -100, 15]],
       // projection: [[10, 18], [12, 10], [-10, 10], [10, 10*Math.random()]],
 
-      points: [
-        { x: 30, y: 900 },
-        { x: 900, y: 900 },
-      ]
+      estimateAdjusted: fromJS([40, 20, 100])
     };
   }
 
   render() {
     const { companies, match, projectionTime, estimationTime } = this.props
     // const { historic, projection } = this.state
-    const points = this.state.points
 
-    const company = companies.find(company => company.get('ShortName') === match.params.id)
+    const company = companies
+      .find(company => company.get('ShortName') === match.params.id)
+      // .set('estimateAdjusted', this.state.estimateAdjusted)
+   
     const estimateFunc = company.get('estimateFunc')
 
-    console.log('props', this.props, match.params.id)
+    // console.log('props', this.props, match.params.id)
     // console.log('state', this.state)
     // console.log('companies', companies.toJS())
-    console.log('company', company.toJS())
+    // console.log('company', company.toJS())
     // console.log('company.get(revenue)', company.get('revenue').toJS())
 
     const historic = company.get('revenue')
@@ -58,10 +57,17 @@ class Sample extends React.Component {
       ]))
       .toJS()
 
+    // TODO Diffrent color if modified
     const projection = new Array(projectionTime)
       .fill(0)
-      .map((v, i) => estimateFunc(i))
-      .map(v => [{ value: v, fill: v > 0 ? "#035C43" : "#ff0000" }])
+      .map((v, i) => isNaN(company.getIn(['estimateAdjusted', i]))
+        ? { value: estimateFunc(i), fill: "#035C43" }
+        : { value: company.getIn(['estimateAdjusted', i]), fill: "#145C23" }
+      )
+      .map((o, i) => [{
+        ...o,
+        onMouseDown: (e) => startDrag(e, i)
+      }])
 
     const values = historic.concat(projection).flat().map(g => g.value)
 
@@ -74,24 +80,23 @@ class Sample extends React.Component {
     const groups = historic.length + projection.length
     const groupWidth = (viewBoxWidth - paddingGroups * groups) / groups
 
-    const transform = (x, y) => ({
-      x: paddingGroups*(x) + groupWidth*(x + 0.5),
-      y: zeroLevel - y*yScaleFactor,
+    const transform = (n, v) => ({
+      x: paddingGroups*(n) + groupWidth*(n + 0.5),
+      y: zeroLevel - v*yScaleFactor,
     })
 
     const historicBars = historic
       .concat(projection)
-      .map((historicGroup, historicGroupIndex) =>
-      historicGroup.map((historicBar, historicBarIndex) => ({
-        x: paddingGroups*(historicGroupIndex) + groupWidth*(historicGroupIndex + historicBarIndex/historicGroup.length),
-        y: historicBar.value > 0 ? zeroLevel - historicBar.value*yScaleFactor : zeroLevel,
+      .map((group, groupIndex) =>
+        group.map((bar, barIndex) => ({
+        x: paddingGroups*(groupIndex) + groupWidth*(groupIndex + barIndex/group.length),
+        y: bar.value > 0 ? zeroLevel - bar.value*yScaleFactor : zeroLevel,
         width: 10,
-        height: Math.abs(historicBar.value)*yScaleFactor,
-        fill: historicBar.fill,
+        height: Math.abs(bar.value)*yScaleFactor,
+        fill: bar.fill,
+        onMouseDown: bar.onMouseDown,
       })))
       .flat()  
-
-    console.log('historicBars', yScaleFactor, historicBars)
 
     const startLineN = historic.length - estimationTime
     const stopLineN = historic.length + projectionTime
@@ -99,7 +104,24 @@ class Sample extends React.Component {
     const startLine = transform(startLineN, estimateFunc(-estimationTime))
     const stopLine = transform(stopLineN, estimateFunc(projectionTime))
 
-    console.log('line', startLineN, stopLineN, startLine, stopLine)
+    const startDrag = (event, index) => {
+      event.preventDefault();
+  
+      const mouseup = (event) => {
+        let cursorPoint = this.svg.createSVGPoint();
+        cursorPoint.x = event.clientX;
+        cursorPoint.y = event.clientY;
+        cursorPoint = cursorPoint.matrixTransform(this.svg.getScreenCTM().inverse());
+        const y = cursorPoint.y
+        const value = (zeroLevel - y) / yScaleFactor
+
+        this.props.setEstimateAdjusted(company.get('ShortName'), index, value)
+        
+        document.removeEventListener("mouseup", mouseup);
+      };
+  
+      document.addEventListener("mouseup", mouseup);
+    };
 
     return (
       <div>
@@ -119,50 +141,11 @@ class Sample extends React.Component {
               strokeDasharray="5,5"
               key="line"
             />
-            {points.map((point, i) =>
-              <g transform="translate(-15, -15)" key={i}>
-                <rect
-                  x={point.x}
-                  y={point.y}
-                  key={i}
-                  width="30"
-                  height="30"
-                  onMouseDown={(e) => this.startDrag(e, i)}
-                />
-              </g>
-            )}
           </svg>
         </div>
       </div>
     )
   }
-
-  startDrag = (event, index) => {
-    event.preventDefault();
-
-    const mousemove = (event) => {
-      event.preventDefault();
-      let cursorPoint = this.svg.createSVGPoint();
-      cursorPoint.x = event.clientX;
-      cursorPoint.y = event.clientY;
-      cursorPoint = cursorPoint.matrixTransform(this.svg.getScreenCTM().inverse());
-      this.setState({
-        points: this.state.points.map(
-          (p, i) => (index === i ? {
-            x: Math.max(Math.min(cursorPoint.x, 1000), 0),
-            y: Math.max(Math.min(cursorPoint.y, 1000), 0)
-          } : p))
-      })
-    };
-
-    const mouseup = (event) => {
-      document.removeEventListener("mousemove", mousemove);
-      document.removeEventListener("mouseup", mouseup);
-    };
-
-    document.addEventListener("mousemove", mousemove);
-    document.addEventListener("mouseup", mouseup);
-  };
 }
 
 export default Sample;

@@ -69,11 +69,23 @@ class Routes extends React.Component {
     const mergedCompanies = companiesExternal
       .filter(company => company.has('earnings') && company.get('earnings').size >= estimationTime )
       // .filter(company => company.getIn([estimateType]) && company.getIn([estimateType]).size >= projectionTime)
+      .mergeDeep(companiesInternal)
       .map(company => {
         // const leverageType = ''
         // const [leverage, cost, type] = parseMargin(leverageType, company);
         
-        const { estimate, fitt, estimateFunc } = dividendEstimate(company, projectionTime, 0, estimateType, estimationTime)
+        const { fitt, estimateFunc } = dividendEstimate(company, projectionTime, 0, estimateType, estimationTime)
+
+        // const dividendEstimateVector = new Array(projectionTime).fill(0).map((v, i) => dividendRatio*earningsEstimateFunc(i))
+        // estimate: dividendEstimateVector.reduce((s, v) => s+v) / projectionTime,
+  
+        const estimate = new Array(projectionTime)
+          .fill(0)
+          .map((v, i) => isNaN(company.getIn(['estimateAdjusted', i]))
+            ? estimateFunc(i)
+            : company.getIn(['estimateAdjusted', i]))
+          .reduce((s, v) => s+v)
+          / projectionTime
 
         const revenueLs  = leastSquarceEstimate(company.get('revenue').slice(-estimationTime).toJS())
         const earningsLs = leastSquarceEstimate(company.get('earnings').slice(-estimationTime).toJS())
@@ -93,14 +105,13 @@ class Routes extends React.Component {
       })
       .filter(company => !revenueGrowth || company.getIn(['revenueLs', 'slope']) > 0)
       .filter(company => !earningsGrowth || company.getIn(['earningsLs', 'slope']) > 0)
-      .mergeDeep(companiesInternal)
       .filter(company => company.get('fitt') >= fittRange[0] && company.get('fitt') <= fittRange[1])
       .filter(company => company.get('pe') >= peRange[0] && company.get('pe') <= peRange[1])
       .filter(company => company.get('yield') >= yieldRange[0] && company.get('yield') <= yieldRange[1])
       .filter(company => company.get('avgDividendRatio') >= dividendRatioRange[0] && company.get('avgDividendRatio') <= dividendRatioRange[1])
       .toList()
 
-    console.log('mergedCompanies', mergedCompanies.toJS())
+    // console.log('mergedCompanies', mergedCompanies.toJS())
 
     const filterSettings = {
       fittRange, dividendRatioRange, peRange, yieldRange
@@ -161,7 +172,16 @@ class Routes extends React.Component {
       </Navbar>,
 
       <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={mergedCompanies} {...filterSettings} onChange={param => this.setState(param)} />} />,
-      <Route key="routeGraph" path="/:id" exact render={props => <GraphInteractive key="graph" {...props} estimationTime={estimationTime} projectionTime={projectionTime} companies={mergedCompanies} />} />
+      <Route key="routeGraph" path="/:id" exact render={props =>
+        <GraphInteractive key="graph" {...props}
+          estimationTime={estimationTime}
+          projectionTime={projectionTime}
+          companies={mergedCompanies}
+          setEstimateAdjusted={(shortName, index, value) => this.setState({
+            companiesInternal: this.state.companiesInternal.setIn([shortName, 'estimateAdjusted', index], value)
+          })}
+        />}
+      />
     ]
   }
 }
