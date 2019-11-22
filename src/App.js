@@ -74,7 +74,7 @@ class Routes extends React.Component {
         // const leverageType = ''
         // const [leverage, cost, type] = parseMargin(leverageType, company);
         
-        const { fitt, estimateFunc } = dividendEstimate(company, projectionTime, 0, estimateType, estimationTime)
+        const { fitt, estimateFunc, dividendRatio } = dividendEstimate(company, projectionTime, 0, estimateType, estimationTime)
 
         // const dividendEstimateVector = new Array(projectionTime).fill(0).map((v, i) => dividendRatio*earningsEstimateFunc(i))
         // estimate: dividendEstimateVector.reduce((s, v) => s+v) / projectionTime,
@@ -96,6 +96,7 @@ class Routes extends React.Component {
           .set('fitt', fitt)
           .set('revenueLs', fromJS(revenueLs))
           .set('earningsLs', fromJS(earningsLs))
+          .set('avgDividendRatio', dividendRatio)
           // .set('estimate', dividendEstimate(company, projectionTime, 0) / company.get('price') / company.getIn(['numberOfStocks', -1]), 0)
           // .set('earningsEstimate', leverage*earningsEstimate(company, projectionTime) - cost)
           // .set('earningsEstimate', earningsEstimate(company, projectionTime))

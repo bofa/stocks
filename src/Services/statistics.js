@@ -41,33 +41,45 @@ export function earningsEstimate(earningsLs, netBrowing, projectionTime, intrest
 }
 
 export function dividendEstimate(company, projectionTime, intrest, type, estimationTime) {
-  const companyJs = company.toJS();
-  const { avgDividendRatio, netBrowing, earnings } = companyJs;
-  const dividendRatio = Math.min(avgDividendRatio, 0.8);
-
+  // const companyJs = company.toJS();
+  // const { avgDividendRatio, netBrowing, earnings } = companyJs;
+  
   // console.log('companyJs', companyJs)
 
   let estimationSeries
   if(type === 'combo') {
-    estimationSeries = companyJs.earnings.map((e, i) => (e + companyJs.freeCashFlow[i]) / 2)
+    estimationSeries = company.get('earnings')
+      .map((e, i) => (e + company.getIn(['freeCashFlow', i]) / 2))
   } else {
-    estimationSeries = companyJs[type];
+    estimationSeries = company.get(type)
   }
-
   // console.log('estimationSeries', estimationSeries)
 
   if(estimationSeries === undefined || estimationSeries.length < estimationTime) {
     return NaN
   }
 
-  const typeLs = leastSquarceEstimate(estimationSeries.slice(earnings.length-estimationTime, earnings.length))
-  const earningsEstimateFunc = earningsEstimate(typeLs, netBrowing, projectionTime, intrest)
+  const estSeriesSlice = estimationSeries.slice(-estimationTime)
   
-  const estimateFunc = (t) => dividendRatio*earningsEstimateFunc(t)
+  const estSlice = estSeriesSlice
+    .reduce((s, v, i, a) => s + v)
+  const dividendSlice = company
+    .get('dividend')
+    .slice(-estimationTime)
+    .reduce((s, v, i, a) => s + v)
+
+  const dividendRatio = dividendSlice / estSlice
+ // const dividendRatio = 1 // Math.min(avgDividendRatio, 0.8);
+
+  const typeLs = leastSquarceEstimate(estSeriesSlice.toJS())
+  const earningsEstimateFunc = earningsEstimate(typeLs, company.get('netBrowing'), projectionTime, intrest)
+  
+  const estimateFunc = (t) => Math.max(0, Math.min(0.8, dividendRatio))*earningsEstimateFunc(t)
 
   return {
     fitt: typeLs.fitt,
     estimateFunc,
+    dividendRatio,
   }
 }
 
