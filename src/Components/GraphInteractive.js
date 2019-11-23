@@ -1,27 +1,28 @@
 import React from 'react'
 import { fromJS } from 'immutable'
-import { AppContext } from '../AppContext'
+// import { AppContext } from '../AppContext'
 import NavbarInteractiveGraph from './NavbarInteractiveGraph'
 
 // https://codepen.io/nasrullahs/pen/QKYZdO
 
-const paddingGroups = 40;
-const viewBoxWidth = 1200;
-const viewBoxHeigth = 1000;
+const paddingGroups = 40
+const viewBoxWidth = 1200
+const viewBoxHeigth = 1000
+const barWidth = 8
 
 class Sample extends React.Component {
 
-  static contextType = AppContext
+  // static contextType = AppContext
 
-  constructor() {
-    super();
-    this.state = {
+  // constructor() {
+    // super();
+    // this.state = {
       // historic: [[100, 8, -10], [10, 8, -10], [30, -100, 15]],
       // projection: [[10, 18], [12, 10], [-10, 10], [10, 10*Math.random()]],
 
-      estimateAdjusted: fromJS([40, 20, 100])
-    };
-  }
+      // estimateAdjusted: fromJS([40, 20, 100])
+    // };
+  // }
 
   render() {
     const { companies, match, projectionTime, estimationTime } = this.props
@@ -36,7 +37,7 @@ class Sample extends React.Component {
     // console.log('props', this.props, match.params.id)
     // console.log('state', this.state)
     // console.log('companies', companies.toJS())
-    // console.log('company', company.toJS())
+    console.log('company', company.toJS())
     // console.log('company.get(revenue)', company.get('revenue').toJS())
 
     const historic = company.get('revenue')
@@ -44,6 +45,9 @@ class Sample extends React.Component {
         {
           value: r,
           fill: r > 0 ? '#123456' : 'red',
+        }, {
+          value: company.getIn(['netBrowing', i]),
+          fill: company.getIn(['netBrowing', i]) > 0 ? '#ff00ff' : 'green',
         }, {
           value: company.getIn(['freeCashFlow', i]),
           fill: company.getIn(['freeCashFlow', i]) > 0 ? '#0eefcd' : 'red',
@@ -57,12 +61,11 @@ class Sample extends React.Component {
       ]))
       .toJS()
 
-    // TODO Diffrent color if modified
     const projection = new Array(projectionTime)
       .fill(0)
-      .map((v, i) => isNaN(company.getIn(['estimateAdjusted', i]))
+      .map((v, i) => isNaN(company.getIn(['estimateAdjusted', '' + i]))
         ? { value: estimateFunc(i), fill: "#035C43" }
-        : { value: company.getIn(['estimateAdjusted', i]), fill: "#145C23" }
+        : { value: company.getIn(['estimateAdjusted', '' + i]), fill: "#145C23" }
       )
       .map((o, i) => [{
         ...o,
@@ -91,7 +94,7 @@ class Sample extends React.Component {
         group.map((bar, barIndex) => ({
         x: paddingGroups*(groupIndex) + groupWidth*(groupIndex + barIndex/group.length),
         y: bar.value > 0 ? zeroLevel - bar.value*yScaleFactor : zeroLevel,
-        width: 10,
+        width: barWidth,
         height: Math.abs(bar.value)*yScaleFactor,
         fill: bar.fill,
         onMouseDown: bar.onMouseDown,
@@ -115,7 +118,7 @@ class Sample extends React.Component {
         const y = cursorPoint.y
         const value = (zeroLevel - y) / yScaleFactor
 
-        this.props.setEstimateAdjusted(company.get('ShortName'), index, value)
+        this.props.setEstimateAdjusted(company.get('ShortName'), '' + index, value)
         
         document.removeEventListener("mouseup", mouseup);
       };

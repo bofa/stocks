@@ -4,42 +4,45 @@ import axios from 'axios'
 import { fromJS } from 'immutable'
 import { Slider, Checkbox, Button, Popover, Navbar } from "@blueprintjs/core";
 
-// import { AppContext } from './AppContext'
 import StockTable from "./Components/StockTable"
 import GraphInteractive from './Components/GraphInteractive'
 import { dividendEstimate, leastSquarceEstimate } from './Services/statistics'
-
-// import Index from './views/Index';
-// import Company from './views/Company';
-// import Return from './views/Return';
-// import Validation from './views/Validation';
 
 // TODO https://reacttraining.com/react-router/web/guides/scroll-restoration
 
 class Routes extends React.Component {
 
-  state = {
-    selected: 'avanza',
-    estimateType: 'earnings',
-    revenueGrowth: true,
-    earningsGrowth: true,
-    fittRange: [0, 1],
-    dividendRatioRange: [0, 1],
-    peRange: [0, 100],
-    yieldRange: [0, 0.2],
-    projectionTime: 5,
-    estimationTime: 4,
+  constructor() {
+    super()
 
-    companiesExternal: fromJS({}),
-    companiesInternal: fromJS({
-      // "NOVU": {
-      //   yield: 2
-      // },
-    })
+    const localStorageFilterSettings = localStorage.getItem('filterSettings')
+    const localStorageCompaniesInternal = localStorage.getItem('companiesInternal')
+
+    this.state = {
+      selected: 'avanza',
+      estimateType: 'earnings',
+      revenueGrowth: true,
+      earningsGrowth: true,
+      fittRange: [0, 1],
+      dividendRatioRange: [0, 1],
+      peRange: [0, 100],
+      yieldRange: [0, 0.2],
+      projectionTime: 5,
+      estimationTime: 4,
+
+      ...JSON.parse(localStorageFilterSettings),
+
+      companiesExternal: fromJS({}),
+      companiesInternal: localStorageCompaniesInternal
+        ? fromJS(JSON.parse(localStorageCompaniesInternal))
+        : fromJS({})
+    }
+
   }
 
   componentDidMount() {
-    axios.get("https://bofa.github.io/stock-prediction/earnings.json")
+    axios.get('https://bofa.github.io/stock-prediction/earnings.json')
+    // axios.get('/earnings.json')
       .then(response => {
         const companiesAsObject = response.data
           .reduce((acc, cur, i) => {
@@ -55,12 +58,6 @@ class Routes extends React.Component {
 
   render() {
     const { projectionTime, estimationTime, companiesExternal, companiesInternal, estimateType, revenueGrowth, earningsGrowth, fittRange, dividendRatioRange, peRange, yieldRange } = this.state
-
-    // const revenueGrowth = true
-    // const earningsGrowth = true
-
-    // console.log('state', this.state)
-    // console.log('companiesInternal', companiesExternal.toJS(), companiesInternal.toJS())
 
     if(companiesExternal.size < 1) {
       return null
@@ -83,7 +80,7 @@ class Routes extends React.Component {
           .fill(0)
           .map((v, i) => isNaN(company.getIn(['estimateAdjusted', i]))
             ? estimateFunc(i)
-            : company.getIn(['estimateAdjusted', i]))
+            : company.getIn(['estimateAdjusted', '' + i]))
           .reduce((s, v) => s+v)
           / projectionTime
 
@@ -103,20 +100,24 @@ class Routes extends React.Component {
           .set('yield', company.getIn(['dividend', -1]) / company.getIn(['price']) / company.getIn(['numberOfStocks', -1]))
           .set('pe', company.getIn(['price']) * company.getIn(['numberOfStocks', -1]) / company.getIn(['earnings', -1]))
           .set('borsdataLink', `https://borsdata.se/${company.get('CountryUrlName')}/nyckeltal`)
-      })
+      }).toList();
+
+    const filteredCompanies = mergedCompanies
       .filter(company => !revenueGrowth || company.getIn(['revenueLs', 'slope']) > 0)
       .filter(company => !earningsGrowth || company.getIn(['earningsLs', 'slope']) > 0)
       .filter(company => company.get('fitt') >= fittRange[0] && company.get('fitt') <= fittRange[1])
       .filter(company => company.get('pe') >= peRange[0] && company.get('pe') <= peRange[1])
       .filter(company => company.get('yield') >= yieldRange[0] && company.get('yield') <= yieldRange[1])
       .filter(company => company.get('avgDividendRatio') >= dividendRatioRange[0] && company.get('avgDividendRatio') <= dividendRatioRange[1])
-      .toList()
 
     // console.log('mergedCompanies', mergedCompanies.toJS())
 
     const filterSettings = {
-      fittRange, dividendRatioRange, peRange, yieldRange
+      projectionTime, estimationTime, estimateType, revenueGrowth, earningsGrowth, fittRange, dividendRatioRange, peRange, yieldRange
     }
+
+    localStorage.setItem('filterSettings', JSON.stringify(filterSettings))
+    localStorage.setItem('companiesInternal', JSON.stringify(companiesInternal))
 
     return [
       <Navbar>
@@ -172,7 +173,7 @@ class Routes extends React.Component {
         </Navbar.Group>
       </Navbar>,
 
-      <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={mergedCompanies} {...filterSettings} onChange={param => this.setState(param)} />} />,
+      <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={filteredCompanies} {...filterSettings} onChange={param => this.setState(param)} />} />,
       <Route key="routeGraph" path="/:id" exact render={props =>
         <GraphInteractive key="graph" {...props}
           estimationTime={estimationTime}
