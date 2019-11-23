@@ -46,7 +46,7 @@ class Sample extends React.Component {
           value: r,
           fill: r > 0 ? '#123456' : 'red',
         }, {
-          value: company.getIn(['netBrowing', i]),
+          value: -company.getIn(['netBrowing', i]),
           fill: company.getIn(['netBrowing', i]) > 0 ? '#ff00ff' : 'green',
         }, {
           value: company.getIn(['freeCashFlow', i]),

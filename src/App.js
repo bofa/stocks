@@ -23,6 +23,8 @@ class Routes extends React.Component {
       estimateType: 'earnings',
       revenueGrowth: true,
       earningsGrowth: true,
+      netBrowingDecline: true,
+
       fittRange: [0, 1],
       dividendRatioRange: [0, 1],
       peRange: [0, 100],
@@ -57,14 +59,27 @@ class Routes extends React.Component {
   }
 
   render() {
-    const { projectionTime, estimationTime, companiesExternal, companiesInternal, estimateType, revenueGrowth, earningsGrowth, fittRange, dividendRatioRange, peRange, yieldRange } = this.state
+    const {
+      projectionTime,
+      estimationTime,
+      companiesExternal,
+      companiesInternal,
+      estimateType,
+      revenueGrowth,
+      earningsGrowth,
+      netBrowingDecline,
+      fittRange,
+      dividendRatioRange,
+      peRange,
+      yieldRange,
+    } = this.state
 
     if(companiesExternal.size < 1) {
       return null
     }
 
     const mergedCompanies = companiesExternal
-      .filter(company => company.has('earnings') && company.get('earnings').size >= estimationTime )
+      // .filter(company => company.has('earnings') && company.get('earnings').size >= estimationTime )
       // .filter(company => company.getIn([estimateType]) && company.getIn([estimateType]).size >= projectionTime)
       .mergeDeep(companiesInternal)
       .map(company => {
@@ -76,16 +91,18 @@ class Routes extends React.Component {
         // const dividendEstimateVector = new Array(projectionTime).fill(0).map((v, i) => dividendRatio*earningsEstimateFunc(i))
         // estimate: dividendEstimateVector.reduce((s, v) => s+v) / projectionTime,
   
+        if(company.get('ShortName') === 'RUTAV')
+          console.log('Gurkburk', company.getIn(['estimateAdjusted']).toJS())
+
         const estimate = new Array(projectionTime)
           .fill(0)
-          .map((v, i) => isNaN(company.getIn(['estimateAdjusted', i]))
-            ? estimateFunc(i)
-            : company.getIn(['estimateAdjusted', '' + i]))
+          .map((v, i) => company.getIn(['estimateAdjusted', '' + i]) || estimateFunc(i))
           .reduce((s, v) => s+v)
           / projectionTime
 
         const revenueLs  = leastSquarceEstimate(company.get('revenue').slice(-estimationTime).toJS())
         const earningsLs = leastSquarceEstimate(company.get('earnings').slice(-estimationTime).toJS())
+        const netBrowingLs = leastSquarceEstimate(company.get('netBrowing').slice(-estimationTime).toJS())
 
         return company
           .set('estimate', estimate / company.get('price') / company.getIn(['numberOfStocks', -1]))
@@ -93,6 +110,7 @@ class Routes extends React.Component {
           .set('fitt', fitt)
           .set('revenueLs', fromJS(revenueLs))
           .set('earningsLs', fromJS(earningsLs))
+          .set('netBrowingLs', fromJS(netBrowingLs))
           .set('avgDividendRatio', dividendRatio)
           // .set('estimate', dividendEstimate(company, projectionTime, 0) / company.get('price') / company.getIn(['numberOfStocks', -1]), 0)
           // .set('earningsEstimate', leverage*earningsEstimate(company, projectionTime) - cost)
@@ -103,8 +121,10 @@ class Routes extends React.Component {
       }).toList();
 
     const filteredCompanies = mergedCompanies
+      .filter(company => company.has('earnings') && company.get('earnings').size >= estimationTime )
       .filter(company => !revenueGrowth || company.getIn(['revenueLs', 'slope']) > 0)
       .filter(company => !earningsGrowth || company.getIn(['earningsLs', 'slope']) > 0)
+      .filter(company => !netBrowingDecline || company.getIn(['netBrowingLs', 'slope']) < 0)
       .filter(company => company.get('fitt') >= fittRange[0] && company.get('fitt') <= fittRange[1])
       .filter(company => company.get('pe') >= peRange[0] && company.get('pe') <= peRange[1])
       .filter(company => company.get('yield') >= yieldRange[0] && company.get('yield') <= yieldRange[1])
@@ -113,7 +133,9 @@ class Routes extends React.Component {
     // console.log('mergedCompanies', mergedCompanies.toJS())
 
     const filterSettings = {
-      projectionTime, estimationTime, estimateType, revenueGrowth, earningsGrowth, fittRange, dividendRatioRange, peRange, yieldRange
+      projectionTime, estimationTime, estimateType, revenueGrowth,
+      earningsGrowth, fittRange, dividendRatioRange, peRange,
+      yieldRange, netBrowingDecline
     }
 
     localStorage.setItem('filterSettings', JSON.stringify(filterSettings))
@@ -133,6 +155,7 @@ class Routes extends React.Component {
 
             <Checkbox checked={revenueGrowth} inline label="Revenue Growth" onChange={e => this.setState({ revenueGrowth: e.target.checked })} />
             <Checkbox checked={earningsGrowth} inline label="Earnings Growth" onChange={e => this.setState({ earningsGrowth: e.target.checked })} />
+            <Checkbox checked={netBrowingDecline} inline label="Net Borow Decline" onChange={e => this.setState({ netBrowingDecline: e.target.checked })} />
 
             <Popover content={
               <div width={200} style={{ padding: 10 }}>
