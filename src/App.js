@@ -41,7 +41,7 @@ class Routes extends React.Component {
   }
 
   componentDidMount() {
-    axios.get('https://bofa.github.io/stock-prediction/earnings.json')
+    axios.get('https://bofa.github.io/stocks/earnings.json')
     // axios.get('/earnings.json')
       .then(response => {
         const companiesAsObject = response.data
