@@ -90,9 +90,6 @@ class Routes extends React.Component {
 
         // const dividendEstimateVector = new Array(projectionTime).fill(0).map((v, i) => dividendRatio*earningsEstimateFunc(i))
         // estimate: dividendEstimateVector.reduce((s, v) => s+v) / projectionTime,
-  
-        if(company.get('ShortName') === 'RUTAV')
-          console.log('Gurkburk', company.getIn(['estimateAdjusted']).toJS())
 
         const estimate = new Array(projectionTime)
           .fill(0)

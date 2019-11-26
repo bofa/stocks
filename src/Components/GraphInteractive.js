@@ -130,7 +130,7 @@ class Sample extends React.Component {
       <div>
         <NavbarInteractiveGraph company={company} onHome={() => this.props.history.goBack()} />
         <div style={{ margin: 20}}>
-          <svg width="100%" height="100%" viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeigth}`} ref={(svg) => this.svg = svg}>
+          <svg width="90vw" height="100%" viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeigth}`} ref={(svg) => this.svg = svg}>
             {historicBars.map((bar, i) => 
               <rect {...bar} key={i}
               ></rect>
