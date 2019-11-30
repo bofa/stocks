@@ -1,7 +1,7 @@
 import React from 'react'
 import { Route } from 'react-router'
 import axios from 'axios'
-import { fromJS } from 'immutable'
+import { fromJS, Map } from 'immutable'
 import { Slider, Checkbox, Button, Popover, Navbar } from "@blueprintjs/core";
 
 import StockTable from "./Components/StockTable"
@@ -34,28 +34,42 @@ class Routes extends React.Component {
 
       ...JSON.parse(localStorageFilterSettings),
 
-      companiesExternal: fromJS({}),
+      companiesExternal: Map(),
       companiesInternal: localStorageCompaniesInternal
         ? fromJS(JSON.parse(localStorageCompaniesInternal))
-        : fromJS({})
+        : Map(),
+      companiesSheets: Map()
     }
 
   }
 
   componentDidMount() {
-    axios.get('https://bofa.github.io/stocks/earnings.json')
+    const getEarnings$ = axios.get('https://bofa.github.io/stocks/earnings.json')
     // axios.get('/earnings.json')
-      .then(response => {
-        const companiesAsObject = response.data
+      .then(response => fromJS(response.data
           .reduce((acc, cur, i) => {
             acc[cur.ShortName] = cur;
             return acc;
-          }, {});
-        
-        this.setState({
-          companiesExternal: fromJS(companiesAsObject)
-        })
-      })
+          }, {})))
+
+    getEarnings$.then(companies => this.setState({ companiesExternal: companies }))
+
+    const getAmazingSheets$ = axios.get('https://spreadsheets.google.com/feeds/list/183-e_Hf_ZLD4D-91TtqpI35C6TQO_HanD-NKg-XjvAY/od6/public/values?alt=json')
+      .then(response => response.data.feed.entry
+        .map(row => [row['gsx$keyborsdata']['$t'], row['gsx$price']['$t']])
+        .filter(row => row[0].length > 0))
+
+    Promise.all([getEarnings$, getAmazingSheets$])
+      .then(([companies, sheets]) => sheets
+        .map(([sheetUrlName, sheetsPrice]) => [
+          companies.find(company => company.get('CountryUrlName') === sheetUrlName),
+          sheetsPrice,
+        ])
+        .filter(d => d[0])
+        .map(([company, sheetsPrice]) => [company.get('ShortName'), { price: sheetsPrice }])
+      )
+      .then(d => new Map(d))
+      .then(companiesSheets => this.setState({ companiesSheets }))
   }
 
   render() {
@@ -64,6 +78,7 @@ class Routes extends React.Component {
       estimationTime,
       companiesExternal,
       companiesInternal,
+      companiesSheets,
       estimateType,
       revenueGrowth,
       earningsGrowth,
@@ -78,10 +93,13 @@ class Routes extends React.Component {
       return null
     }
 
+    // console.log('state', this.state)
+
     const mergedCompanies = companiesExternal
       // .filter(company => company.has('earnings') && company.get('earnings').size >= estimationTime )
       // .filter(company => company.getIn([estimateType]) && company.getIn([estimateType]).size >= projectionTime)
       .mergeDeep(companiesInternal)
+      .mergeDeep(companiesSheets)
       .map(company => {
         // const leverageType = ''
         // const [leverage, cost, type] = parseMargin(leverageType, company);
