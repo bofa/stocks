@@ -2,7 +2,7 @@ import React from 'react'
 import { Route } from 'react-router'
 import axios from 'axios'
 import { fromJS } from 'immutable'
-import { Slider, Checkbox, Button, Popover, Navbar } from "@blueprintjs/core";
+import { Slider, Checkbox, Button, Popover, Navbar, Switch } from "@blueprintjs/core";
 
 import StockTable from "./Components/StockTable"
 import GraphInteractive from './Components/GraphInteractive'
@@ -118,6 +118,7 @@ class Routes extends React.Component {
       }).toList();
 
     const filteredCompanies = mergedCompanies
+      .filter(company => !company.get('remove'))
       .filter(company => company.has('earnings') && company.get('earnings').size >= estimationTime )
       .filter(company => !revenueGrowth || company.getIn(['revenueLs', 'slope']) > 0)
       .filter(company => !earningsGrowth || company.getIn(['earningsLs', 'slope']) > 0)
@@ -199,6 +200,12 @@ class Routes extends React.Component {
           estimationTime={estimationTime}
           projectionTime={projectionTime}
           companies={mergedCompanies}
+          onClear={(shortName) => this.setState({
+            companiesInternal: this.state.companiesInternal.setIn([shortName, 'estimateAdjusted'], fromJS({}))
+          })}
+          onTrash={(shortName) => this.setState({
+            companiesInternal: this.state.companiesInternal.setIn([shortName, 'remove'], true)
+          })}
           setEstimateAdjusted={(shortName, index, value) => this.setState({
             companiesInternal: this.state.companiesInternal.setIn([shortName, 'estimateAdjusted', index], value)
           })}

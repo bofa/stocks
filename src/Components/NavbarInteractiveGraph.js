@@ -1,14 +1,24 @@
 import React, { memo } from 'react';
-import { Button, Popover, RangeSlider, Checkbox, Navbar } from "@blueprintjs/core";
+import { Button, Navbar, AnchorButton } from "@blueprintjs/core";
 
 function component(props) {
-  const { company, onHome } = props
+  const { company, onHome, onClear, onTrash } = props
+  const shortName = company.get('ShortName')
 
   return (
     <Navbar>
       <Navbar.Group align="left">
-        <Button className="bp3-minimal" icon="home" onClick={() => onHome()} />
+        <Button minimal icon="home" onClick={() => onHome()} />
         <Navbar.Heading>{company.get('Name')}</Navbar.Heading>
+        <Navbar.Divider />
+        <AnchorButton
+          href={company.get('borsdataLink')}
+          rightIcon="share"
+          target="_blank"
+          minimal
+        />
+        <Button minimal icon="eraser" onClick={() => onClear(shortName)} />
+        <Button minimal icon="trash" onClick={() => onTrash(shortName)} />
         <Navbar.Divider />
         <div>
           Estimate: {(100 * company.get('estimate')).toFixed(1)}%/y
