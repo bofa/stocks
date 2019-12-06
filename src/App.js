@@ -27,7 +27,7 @@ class Routes extends React.Component {
 
       fittRange: [0, 1],
       dividendRatioRange: [0, 1],
-      peRange: [0, 100],
+      peRange: [0, 20],
       yieldRange: [0, 0.2],
       projectionTime: 5,
       estimationTime: 4,
@@ -135,23 +135,49 @@ class Routes extends React.Component {
           .set('borsdataLink', `https://borsdata.se/${company.get('CountryUrlName')}/nyckeltal`)
       }).toList();
 
+      const filterSettings = {
+        projectionTime, estimationTime, estimateType, revenueGrowth,
+        earningsGrowth, fittRange, dividendRatioRange, peRange,
+        yieldRange, netBrowingDecline
+      }
+  
+    const fittValues = mergedCompanies
+      .map(c => c.get('fitt'))
+      .filter(v => !isNaN(v))
+
+    // const peValues = mergedCompanies
+    //   .map(c => c.get('pe'))
+    //   .filter(v => !isNaN(v))
+
+    const yieldValues = mergedCompanies
+      .map(c => c.get('yield'))
+      .filter(v => !isNaN(v))
+
+    const avgDividendRatioValues = mergedCompanies
+      .map(c => c.get('avgDividendRatio'))
+      .filter(v => !isNaN(v))
+      .filter(v => v < 1000)
+
+    const filterSettingsRanges = {
+      projectionTime, estimationTime, estimateType, revenueGrowth, netBrowingDecline, earningsGrowth,
+      fittRange: { value: fittRange, min: fittValues.min(), max: fittValues.max() },
+      dividendRatioRange: { value: dividendRatioRange, min: avgDividendRatioValues.min(), max: avgDividendRatioValues.max() },
+      peRange: { value: peRange, min: 0, max: 20 },
+      yieldRange: { value: yieldRange, min: yieldValues.min(), max: yieldValues.max() },
+    }
+
     const filteredCompanies = mergedCompanies
       .filter(company => company.has('earnings') && company.get('earnings').size >= estimationTime )
       .filter(company => !revenueGrowth || company.getIn(['revenueLs', 'slope']) > 0)
       .filter(company => !earningsGrowth || company.getIn(['earningsLs', 'slope']) > 0)
       .filter(company => !netBrowingDecline || company.getIn(['netBrowingLs', 'slope']) < 0)
       .filter(company => company.get('fitt') >= fittRange[0] && company.get('fitt') <= fittRange[1])
-      .filter(company => company.get('pe') >= peRange[0] && company.get('pe') <= peRange[1])
+      .filter(company => (company.get('pe') >= peRange[0] || peRange[0] <= 0)
+        && (company.get('pe') <= peRange[1] || peRange[1] === filterSettingsRanges.max))
       .filter(company => company.get('yield') >= yieldRange[0] && company.get('yield') <= yieldRange[1])
       .filter(company => company.get('avgDividendRatio') >= dividendRatioRange[0] && company.get('avgDividendRatio') <= dividendRatioRange[1])
 
     // console.log('mergedCompanies', mergedCompanies.toJS())
-
-    const filterSettings = {
-      projectionTime, estimationTime, estimateType, revenueGrowth,
-      earningsGrowth, fittRange, dividendRatioRange, peRange,
-      yieldRange, netBrowingDecline
-    }
 
     localStorage.setItem('filterSettings', JSON.stringify(filterSettings))
     localStorage.setItem('companiesInternal', JSON.stringify(companiesInternal))
@@ -211,7 +237,7 @@ class Routes extends React.Component {
         </Navbar.Group>
       </Navbar>,
 
-      <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={filteredCompanies} {...filterSettings} onChange={param => this.setState(param)} />} />,
+      <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={filteredCompanies} {...filterSettingsRanges} onChange={param => this.setState(param)} />} />,
       <Route key="routeGraph" path="/:id" exact render={props =>
         <GraphInteractive key="graph" {...props}
           estimationTime={estimationTime}

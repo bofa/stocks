@@ -28,24 +28,20 @@ function component (props) {
           <th>
             Yield
             <PopupSlider
-              value={yieldRange}
               onChange={yieldRange => onChange({ yieldRange })} 
-              min={0}
-              max={0.2}
+              {...yieldRange}
               stepSize={0.01}
-              labelStepSize={0.02}
+              labelStepSize={0.2}
               vertical
             />
           </th>
           <th>
             P/E
             <PopupSlider
-              value={peRange}
               onChange={peRange => onChange({ peRange })} 
-              min={-100}
-              max={100}
+              {...peRange}
               stepSize={1}
-              labelStepSize={20}
+              labelStepSize={1}
               vertical
             />
           </th>
@@ -54,20 +50,22 @@ function component (props) {
             <PopupSlider
               value={dividendRatioRange}
               onChange={dividendRatioRange => onChange({ dividendRatioRange })} 
-              min={0}
-              max={2}
+              {...dividendRatioRange}
+              // min={0}
+              // max={2}
               stepSize={0.1}
-              labelStepSize={0.1}
+              labelStepSize={10}
               vertical
             />
           </th>
           <th>
             Model fitt
             <PopupSlider
-              value={fittRange}
+              {...fittRange}
+              // value={fittRange.value}
               onChange={fittRange => onChange({ fittRange })} 
-              min={0}
-              max={1}
+              // min={0}
+              // max={1}
               stepSize={0.1}
               labelStepSize={0.2}
               vertical
