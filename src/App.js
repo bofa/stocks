@@ -135,11 +135,11 @@ class Routes extends React.Component {
           .set('borsdataLink', `https://borsdata.se/${company.get('CountryUrlName')}/nyckeltal`)
       }).toList();
 
-      const filterSettings = {
-        projectionTime, estimationTime, estimateType, revenueGrowth,
-        earningsGrowth, fittRange, dividendRatioRange, peRange,
-        yieldRange, netBrowingDecline
-      }
+    const filterSettings = {
+      projectionTime, estimationTime, estimateType, revenueGrowth,
+      earningsGrowth, fittRange, dividendRatioRange, peRange,
+      yieldRange, netBrowingDecline
+    }
   
     const fittValues = mergedCompanies
       .map(c => c.get('fitt'))
@@ -167,6 +167,7 @@ class Routes extends React.Component {
     }
 
     const filteredCompanies = mergedCompanies
+      .filter(company => !company.get('remove'))
       .filter(company => company.has('earnings') && company.get('earnings').size >= estimationTime )
       .filter(company => !revenueGrowth || company.getIn(['revenueLs', 'slope']) > 0)
       .filter(company => !earningsGrowth || company.getIn(['earningsLs', 'slope']) > 0)
@@ -237,12 +238,18 @@ class Routes extends React.Component {
         </Navbar.Group>
       </Navbar>,
 
-      <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={filteredCompanies} {...filterSettingsRanges} onChange={param => this.setState(param)} />} />,
+      <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={filteredCompanies} {...filterSettings} onChange={param => this.setState(param)} />} />,
       <Route key="routeGraph" path="/:id" exact render={props =>
         <GraphInteractive key="graph" {...props}
           estimationTime={estimationTime}
           projectionTime={projectionTime}
           companies={mergedCompanies}
+          onClear={(shortName) => this.setState({
+            companiesInternal: this.state.companiesInternal.setIn([shortName, 'estimateAdjusted'], fromJS({}))
+          })}
+          onTrash={(shortName) => this.setState({
+            companiesInternal: this.state.companiesInternal.setIn([shortName, 'remove'], true)
+          })}
           setEstimateAdjusted={(shortName, index, value) => this.setState({
             companiesInternal: this.state.companiesInternal.setIn([shortName, 'estimateAdjusted', index], value)
           })}

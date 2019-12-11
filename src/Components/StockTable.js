@@ -13,7 +13,7 @@ function component (props) {
   // console.log('props', props)
 
   const renderData = companies
-    .filter(c => c.get('estimate'))
+    // .filter(c => c.get('estimate'))
     .sortBy(c => -c.get('estimate'))
     // .filter((c, i) => c.get('yield') > 0)
     // .filter((c, i) => i < 50)

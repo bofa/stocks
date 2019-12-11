@@ -128,7 +128,11 @@ class Sample extends React.Component {
 
     return (
       <div>
-        <NavbarInteractiveGraph company={company} onHome={() => this.props.history.goBack()} />
+        <NavbarInteractiveGraph company={company}
+          onHome={() => this.props.history.goBack()}
+          onClear={this.props.onClear}
+          onTrash={this.props.onTrash}
+        />
         <div style={{ margin: 20}}>
           <svg width="90vw" height="100%" viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeigth}`} ref={(svg) => this.svg = svg}>
             {historicBars.map((bar, i) => 
