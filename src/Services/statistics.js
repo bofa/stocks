@@ -40,7 +40,7 @@ export function earningsEstimate(earningsLs, netBrowing, projectionTime, intrest
   return (time) => biasEnd + slope*(time + 1)
 }
 
-export function dividendEstimate(company, projectionTime, intrest, type, estimationTime) {
+export function dividendEstimate(company, projectionTime, intrest, type, estimateDividendType, estimationTime) {
   // const companyJs = company.toJS();
   // const { avgDividendRatio, netBrowing, earnings } = companyJs;
   
@@ -63,18 +63,34 @@ export function dividendEstimate(company, projectionTime, intrest, type, estimat
   
   const estSlice = estSeriesSlice
     .reduce((s, v, i, a) => s + v)
+    
   const dividendSlice = company
     .get('dividend')
     .slice(-estimationTime)
     .reduce((s, v, i, a) => s + v)
 
-  const dividendRatio = dividendSlice / estSlice
+  const dividendRatioAll = dividendSlice / estSlice
+  const sumAverageValue = Math.max(0, Math.min(0.8, dividendRatioAll))
+
+  const individualAverageValue = company
+    .get('dividend')
+    .slice(-estimationTime)
+    .reduce((s, v, i, a) => s + (v / estSeriesSlice.get(i))/a.size)
+
+  const dividendRatios = {
+    all: 1,
+    sumAverage: sumAverageValue,
+    individualAverage: individualAverageValue,
+  }
+  
+  
  // const dividendRatio = 1 // Math.min(avgDividendRatio, 0.8);
+  const dividendRatio = dividendRatios[estimateDividendType]
 
   const typeLs = leastSquarceEstimate(estSeriesSlice.toJS())
   const earningsEstimateFunc = earningsEstimate(typeLs, company.get('netBrowing'), projectionTime, intrest)
   
-  const estimateFunc = (t) => Math.max(0, Math.min(0.8, dividendRatio))*earningsEstimateFunc(t)
+  const estimateFunc = (t) => dividendRatio*earningsEstimateFunc(t)
 
   return {
     fitt: typeLs.fitt,

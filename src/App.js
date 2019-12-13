@@ -21,6 +21,7 @@ class Routes extends React.Component {
     this.state = {
       selected: 'avanza',
       estimateType: 'earnings',
+      estimateDividendType: 'sumAverage',
       revenueGrowth: true,
       earningsGrowth: true,
       netBrowingDecline: true,
@@ -80,6 +81,7 @@ class Routes extends React.Component {
       companiesInternal,
       companiesSheets,
       estimateType,
+      estimateDividendType,
       revenueGrowth,
       earningsGrowth,
       netBrowingDecline,
@@ -104,10 +106,12 @@ class Routes extends React.Component {
         // const leverageType = ''
         // const [leverage, cost, type] = parseMargin(leverageType, company);
         
-        const { fitt, estimateFunc, dividendRatio } = dividendEstimate(company, projectionTime, 0, estimateType, estimationTime)
+        const { fitt, estimateFunc, dividendRatio } = dividendEstimate(company, projectionTime, 0, estimateType, estimateDividendType, estimationTime)
 
         // const dividendEstimateVector = new Array(projectionTime).fill(0).map((v, i) => dividendRatio*earningsEstimateFunc(i))
         // estimate: dividendEstimateVector.reduce((s, v) => s+v) / projectionTime,
+
+        // TODO estimateDividendType
 
         const estimate = new Array(projectionTime)
           .fill(0)
@@ -149,9 +153,10 @@ class Routes extends React.Component {
     // console.log('mergedCompanies', mergedCompanies.toJS())
 
     const filterSettings = {
-      projectionTime, estimationTime, estimateType, revenueGrowth,
-      earningsGrowth, fittRange, dividendRatioRange, peRange,
-      yieldRange, netBrowingDecline
+      projectionTime, estimationTime,
+      estimateType, estimateDividendType,
+      revenueGrowth, earningsGrowth, netBrowingDecline, 
+      fittRange, dividendRatioRange, peRange, yieldRange,
     }
 
     localStorage.setItem('filterSettings', JSON.stringify(filterSettings))
@@ -160,54 +165,60 @@ class Routes extends React.Component {
     return [
       <Navbar>
         <Navbar.Group align="left">
-            <Navbar.Heading>Stock Prediction</Navbar.Heading>
-            <Navbar.Divider />
-            <select value={estimateType} onChange={event => this.setState({ estimateType: event.currentTarget.value })}>
-              <option value="earnings">Earnings</option>
-              <option value="revenue">Revenue</option>
-              <option value="freeCashFlow">Free Cash Flow</option>
-              <option value="combo">Combo</option>
-            </select>
+          <Navbar.Heading>Stock Prediction</Navbar.Heading>
+          <Navbar.Divider />
+          <select value={estimateType} onChange={event => this.setState({ estimateType: event.currentTarget.value })}>
+            <option value="earnings">Earnings</option>
+            <option value="revenue">Revenue</option>
+            <option value="freeCashFlow">Free Cash Flow</option>
+            <option value="combo">Combo</option>
+          </select>
 
-            <Checkbox checked={revenueGrowth} inline label="Revenue Growth" onChange={e => this.setState({ revenueGrowth: e.target.checked })} />
-            <Checkbox checked={earningsGrowth} inline label="Earnings Growth" onChange={e => this.setState({ earningsGrowth: e.target.checked })} />
-            <Checkbox checked={netBrowingDecline} inline label="Net Borow Decline" onChange={e => this.setState({ netBrowingDecline: e.target.checked })} />
+          <select value={estimateDividendType} onChange={event => this.setState({ estimateDividendType: event.currentTarget.value })}>
+            <option value="all">All</option>
+            <option value="sumAverage">Sum Average</option>
+            <option value="individualAverage">Individual Average</option>
+          </select>
 
-            <Popover content={
-              <div width={200} style={{ padding: 10 }}>
-                <Slider
-                  value={estimationTime}
-                  onChange={estimationTime => this.setState({ estimationTime })} 
-                  min={2}
-                  max={10}
-                  stepSize={1}
-                  labelStepSize={2}
-                  vertical
-                  />
-              </div>}
-            >
-              <Button icon="filter" minimal >
-                {estimationTime} Est Time
-              </Button>
-            </Popover>
+          <Checkbox checked={revenueGrowth} inline label="Revenue Growth" onChange={e => this.setState({ revenueGrowth: e.target.checked })} />
+          <Checkbox checked={earningsGrowth} inline label="Earnings Growth" onChange={e => this.setState({ earningsGrowth: e.target.checked })} />
+          <Checkbox checked={netBrowingDecline} inline label="Net Borow Decline" onChange={e => this.setState({ netBrowingDecline: e.target.checked })} />
 
-            <Popover content={
-              <div width={200} style={{ padding: 10 }}>
-                <Slider
-                  value={projectionTime}
-                  onChange={projectionTime => this.setState({ projectionTime })} 
-                  min={2}
-                  max={10}
-                  stepSize={1}
-                  labelStepSize={2}
-                  vertical
-                  />
-              </div>}
-            >
-              <Button icon="filter" minimal>
-                {projectionTime} Proj Time
-              </Button>
-            </Popover>
+          <Popover content={
+            <div width={200} style={{ padding: 10 }}>
+              <Slider
+                value={estimationTime}
+                onChange={estimationTime => this.setState({ estimationTime })} 
+                min={2}
+                max={10}
+                stepSize={1}
+                labelStepSize={2}
+                vertical
+                />
+            </div>}
+          >
+            <Button icon="filter" minimal >
+              {estimationTime} Est Time
+            </Button>
+          </Popover>
+
+          <Popover content={
+            <div width={200} style={{ padding: 10 }}>
+              <Slider
+                value={projectionTime}
+                onChange={projectionTime => this.setState({ projectionTime })} 
+                min={2}
+                max={10}
+                stepSize={1}
+                labelStepSize={2}
+                vertical
+                />
+            </div>}
+          >
+            <Button icon="filter" minimal>
+              {projectionTime} Proj Time
+            </Button>
+          </Popover>
 
         </Navbar.Group>
       </Navbar>,
