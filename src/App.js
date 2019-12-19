@@ -28,8 +28,9 @@ class Routes extends React.Component {
 
       fittRange: [0, 1],
       dividendRatioRange: [0, 1],
-      peRange: [0, 20],
+      peRange: [0, 50],
       yieldRange: [0, 0.2],
+
       projectionTime: 5,
       estimationTime: 4,
 
@@ -161,12 +162,14 @@ class Routes extends React.Component {
         .map(c => c.get('avgDividendRatio'))
         .filter(v => !isNaN(v))
         .filter(v => v < 1000)
+
+      console.log('avgDividendRatioValues', avgDividendRatioValues.toJS(), avgDividendRatioValues.min(), avgDividendRatioValues.max())
   
       const filterSettingsRanges = {
         projectionTime, estimationTime, estimateType, revenueGrowth, netBrowingDecline, earningsGrowth,
-        fittRange: { value: fittRange, min: fittValues.min(), max: fittValues.max() },
+        fittRange: { value: fittRange, min: 0, max: 1 },
         dividendRatioRange: { value: dividendRatioRange, min: avgDividendRatioValues.min(), max: avgDividendRatioValues.max() },
-        peRange: { value: peRange, min: 0, max: 20 },
+        peRange: { value: peRange, min: 0, max: 50 },
         yieldRange: { value: yieldRange, min: yieldValues.min(), max: yieldValues.max() },
       }
   
@@ -178,7 +181,7 @@ class Routes extends React.Component {
       .filter(company => !netBrowingDecline || company.getIn(['netBrowingLs', 'slope']) < 0)
       .filter(company => company.get('fitt') >= fittRange[0] && company.get('fitt') <= fittRange[1])
       .filter(company => (company.get('pe') >= peRange[0] || peRange[0] <= 0)
-        && (company.get('pe') <= peRange[1] || peRange[1] === filterSettingsRanges.max))
+        && (company.get('pe') <= peRange[1] || peRange[1] === filterSettingsRanges.peRange.max))
       .filter(company => company.get('yield') >= yieldRange[0] && company.get('yield') <= yieldRange[1])
       .filter(company => company.get('avgDividendRatio') >= dividendRatioRange[0] && company.get('avgDividendRatio') <= dividendRatioRange[1])
 
@@ -248,7 +251,7 @@ class Routes extends React.Component {
         </Navbar.Group>
       </Navbar>,
 
-      <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={filteredCompanies} {...filterSettings} onChange={param => this.setState(param)} />} />,
+      <Route key="routeTable" path="/" exact render={props => <StockTable key="table" {...props} companies={filteredCompanies} {...filterSettingsRanges} onChange={param => this.setState(param)} />} />,
       <Route key="routeGraph" path="/:id" exact render={props =>
         <GraphInteractive key="graph" {...props}
           estimationTime={estimationTime}

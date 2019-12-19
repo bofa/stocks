@@ -5,6 +5,8 @@ function component(props) {
   const { company, onHome, onClear, onTrash } = props
   const shortName = company.get('ShortName')
 
+  // console.log('company')
+
   return (
     <Navbar>
       <Navbar.Group align="left">
@@ -26,6 +28,10 @@ function component(props) {
         <Navbar.Divider />
         <div>
           Fitt: {(100 * company.get('fitt')).toFixed(1)}%
+        </div>
+        <Navbar.Divider />
+        <div>
+          Dividend Ratio: {(100 * company.get('avgDividendRatio')).toFixed(1)}%
         </div>
       </Navbar.Group>
     </Navbar>

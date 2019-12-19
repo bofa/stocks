@@ -41,7 +41,7 @@ function component (props) {
               onChange={peRange => onChange({ peRange })} 
               {...peRange}
               stepSize={1}
-              labelStepSize={1}
+              labelStepSize={10}
               vertical
             />
           </th>
@@ -54,18 +54,18 @@ function component (props) {
               // min={0}
               // max={2}
               stepSize={0.1}
-              labelStepSize={10}
+              labelStepSize={0.2}
               vertical
             />
           </th>
           <th>
             Model fitt
             <PopupSlider
-              {...fittRange}
-              // value={fittRange.value}
+              // {...fittRange}
+              value={fittRange.value}
               onChange={fittRange => onChange({ fittRange })} 
-              // min={0}
-              // max={1}
+              min={0}
+              max={1}
               stepSize={0.1}
               labelStepSize={0.2}
               vertical

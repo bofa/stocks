@@ -70,17 +70,16 @@ export function dividendEstimate(company, projectionTime, intrest, type, estimat
     .reduce((s, v, i, a) => s + v)
 
   const dividendRatioAll = dividendSlice / estSlice
-  const sumAverageValue = Math.max(0, Math.min(0.8, dividendRatioAll))
 
   const individualAverageValue = company
     .get('dividend')
     .slice(-estimationTime)
-    .reduce((s, v, i, a) => s + (v / estSeriesSlice.get(i))/a.size)
+    .reduce((s, v, i, a) => s + (v / estSeriesSlice.get(i))/a.size, 0)
 
   const dividendRatios = {
     all: 1,
-    sumAverage: sumAverageValue,
-    individualAverage: individualAverageValue,
+    sumAverage: Math.max(0, Math.min(0.85, dividendRatioAll)),
+    individualAverage: individualAverageValue, // Math.max(0, Math.min(0.85, individualAverageValue)),
   }
   
   
