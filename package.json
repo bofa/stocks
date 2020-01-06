@@ -1,9 +1,9 @@
 {
-  "name": "nordicprediction",
+  "name": "stocks",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@blueprintjs/core": "^3.20.0",
+    "@blueprintjs/core": "^3.22.3",
     "@blueprintjs/table": "^3.8.2",
     "axios": "^0.19.0",
     "immutable": "^4.0.0-rc.12",
@@ -11,7 +11,7 @@
     "react-dom": "^16.12.0",
     "react-immutable-pure-component": "^2.2.2",
     "react-router-dom": "^5.1.2",
-    "react-scripts": "3.2.0"
+    "react-scripts": "^3.3.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -19,7 +19,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "scrape": "babel-node --presets es2015 scrape/scrape.js",
+    "format": "babel-node --presets es2015,stage-0 scrape/format.js"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -38,6 +40,11 @@
   },
   "homepage": "https://bofa.github.io/stocks",
   "devDependencies": {
-    "gh-pages": "^2.1.1"
+    "axios-retry": "^3.1.2",
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "gh-pages": "^2.1.1",
+    "write-json-file": "^4.2.1"
   }
 }

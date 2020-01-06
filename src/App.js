@@ -46,8 +46,9 @@ class Routes extends React.Component {
   }
 
   componentDidMount() {
-    const getEarnings$ = axios.get('https://bofa.github.io/stocks/earnings.json')
-    // axios.get('/earnings.json')
+    const getEarnings$ = axios
+      .get('https://bofa.github.io/stocks/earnings.json')
+      // .get('/earnings.json')
       .then(response => fromJS(response.data
           .reduce((acc, cur, i) => {
             acc[cur.ShortName] = cur;
@@ -103,6 +104,7 @@ class Routes extends React.Component {
       // .filter(company => company.getIn([estimateType]) && company.getIn([estimateType]).size >= projectionTime)
       .mergeDeep(companiesInternal)
       .mergeDeep(companiesSheets)
+      // .filter(company => company.get('ShortName') === "B2020")
       .map(company => {
         // const leverageType = ''
         // const [leverage, cost, type] = parseMargin(leverageType, company);
