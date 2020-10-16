@@ -104,6 +104,7 @@ class Routes extends React.Component {
       // .filter(company => company.getIn([estimateType]) && company.getIn([estimateType]).size >= projectionTime)
       .mergeDeep(companiesInternal)
       .mergeDeep(companiesSheets)
+      .filter(company => company.has('dividend'))
       // .filter(company => company.get('ShortName') === "B2020")
       .map(company => {
         // const leverageType = ''
