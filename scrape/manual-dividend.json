@@ -1,0 +1,74 @@
+[
+	{
+		"key": "EGEN:ADDVISE002",
+		"name": "Addvise Obligation",
+		"type": "Ordinarie utdelning",
+		"amount": "1.8125",
+		"currency": "SEK",
+		"xDate": "2020-01-10",
+		"payoutDate": "2020-01-10"
+	},
+	{
+		"key": "EGEN:ADDVISE002",
+		"name": "Addvise Obligation",
+		"type": "Ordinarie utdelning",
+		"amount": "1.8125",
+		"currency": "SEK",
+		"xDate": "2020-04-10",
+		"payoutDate": "2020-01-10"
+	},
+	{
+		"key": "EGEN:ADDVISE002",
+		"name": "Addvise Obligation",
+		"type": "Ordinarie utdelning",
+		"amount": "1.8125",
+		"currency": "SEK",
+		"xDate": "2020-07-10",
+		"payoutDate": "2020-01-10"
+	},
+	{
+		"key": "EGEN:ADDVISE002",
+		"name": "Addvise Obligation",
+		"type": "Ordinarie utdelning",
+		"amount": "1.8125",
+		"currency": "SEK",
+		"xDate": "2020-10-10",
+		"payoutDate": "2020-01-10"
+	},
+	{
+		"key": "EGEN:ADDVISE002",
+		"name": "Addvise Obligation",
+		"type": "Ordinarie utdelning",
+		"amount": "1.8125",
+		"currency": "SEK",
+		"xDate": "2021-01-10",
+		"payoutDate": "2021-01-10"
+	},
+	{
+		"key": "EGEN:ADDVISE002",
+		"name": "Addvise Obligation",
+		"type": "Ordinarie utdelning",
+		"amount": "1.8125",
+		"currency": "SEK",
+		"xDate": "2021-04-10",
+		"payoutDate": "2021-01-10"
+	},
+	{
+		"key": "EGEN:ADDVISE002",
+		"name": "Addvise Obligation",
+		"type": "Ordinarie utdelning",
+		"amount": "1.8125",
+		"currency": "SEK",
+		"xDate": "2021-07-10",
+		"payoutDate": "2021-01-10"
+	},
+	{
+		"key": "EGEN:ADDVISE002",
+		"name": "Addvise Obligation",
+		"type": "Ordinarie utdelning",
+		"amount": "1.8125",
+		"currency": "SEK",
+		"xDate": "2021-10-10",
+		"payoutDate": "2021-01-10"
+	}
+]
