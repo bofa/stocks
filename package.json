@@ -5,7 +5,7 @@
   "dependencies": {
     "@blueprintjs/core": "^3.22.3",
     "@blueprintjs/table": "^3.8.2",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "cheerio": "^1.0.0-rc.3",
     "immutable": "^4.0.0-rc.12",
     "moment": "^2.29.1",
