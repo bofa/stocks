@@ -10,7 +10,10 @@ function toNumber (string) {
 }
 
 function formatAnalysisReport(response) {
-  return fromJS(response).update('Rows', rows => rows.map(row => row.update('Data', data => data.map(toNumber))));
+  return fromJS(response).update('Rows', rows => rows
+    .map(row => row
+      .update('Data', data => data
+        .map(toNumber))));
 }
 
 // function formatKpisResponseMain (response) {

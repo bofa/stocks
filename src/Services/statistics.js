@@ -49,7 +49,7 @@ export function dividendEstimate(company, projectionTime, intrest, type, estimat
   let estimationSeries
   if(type === 'combo') {
     estimationSeries = company.get('earnings')
-      .map((e, i) => (e + company.getIn(['freeCashFlow', i]) / 2))
+      .map((earnings, i) => (earnings + company.getIn(['freeCashFlow', i])) / 2)
   } else {
     estimationSeries = company.get(type)
   }

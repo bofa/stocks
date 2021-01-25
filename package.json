@@ -24,8 +24,9 @@
     "deploy": "gh-pages -d build",
     "scrape": "babel-node --presets es2015 scrape/scrape.js",
     "format": "babel-node --presets es2015,stage-0 scrape/format.js",
-    "avanza": "babel-node --presets es2015,stage-0 scrape/avanza-dividend.js",
-    "avanzaformat": "babel-node --presets es2015,stage-0 scrape/avanza-dividend-format.js"
+    "avanza": "find /v /c \"\" scrape/output/dividend2021.txt && npm run avanzascrape && npm run avanzaformat && find /v /c \"\" scrape/output/dividend2021.txt",
+    "avanzascrape": "babel-node --presets es2015,stage-0 scrape/avanza-dividend.js",
+    "avanzaformat": "babel-node --presets es2015,stage-0 scrape/avanza-dividend-format.ts"
   },
   "eslintConfig": {
     "extends": "react-app"
