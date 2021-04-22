@@ -89,7 +89,7 @@ export function dividendEstimate(company, projectionTime, intrest, type, estimat
   const typeLs = leastSquarceEstimate(estSeriesSlice.toJS())
   const earningsEstimateFunc = earningsEstimate(typeLs, company.get('netBrowing'), projectionTime, intrest)
   
-  const estimateFunc = (t) => dividendRatio*earningsEstimateFunc(t)
+  const estimateFunc = (t) => dividendRatio * earningsEstimateFunc(t)
 
   return {
     fitt: typeLs.fitt,

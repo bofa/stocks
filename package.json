@@ -7,8 +7,10 @@
     "@blueprintjs/table": "^3.8.2",
     "axios": "^0.19.0",
     "cheerio": "^1.0.0-rc.3",
+    "csv-parser": "^3.0.0",
     "immutable": "^4.0.0-rc.12",
     "moment": "^2.29.1",
+    "papaparse": "^5.3.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-immutable-pure-component": "^2.2.2",
@@ -26,7 +28,11 @@
     "format": "babel-node --presets es2015,stage-0 scrape/format.js",
     "avanza": "find /v /c \"\" scrape/output/dividend2021.txt && npm run avanzascrape && npm run avanzaformat && find /v /c \"\" scrape/output/dividend2021.txt",
     "avanzascrape": "babel-node --presets es2015,stage-0 scrape/avanza-dividend.js",
-    "avanzaformat": "babel-node --presets es2015,stage-0 scrape/avanza-dividend-format.ts"
+    "avanzaformat": "babel-node --presets es2015,stage-0 scrape/avanza-dividend-format.ts",
+    "cagr": "babel-node --presets es2015,stage-0 scrape/cagr.ts",
+    "prepscrape": "babel-node --presets es2015,stage-0 scrape/prep-scrape.ts",
+    "prepformat": "babel-node --presets es2015,stage-0 scrape/prep-format.ts",
+    "exchanges": "babel-node --presets es2015,stage-0 scrape/parseexchanges.ts"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -45,7 +51,7 @@
   },
   "homepage": "https://bofa.github.io/stocks",
   "devDependencies": {
-    "axios-retry": "^3.1.2",
+    "axios-retry": "^3.1.9",
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",

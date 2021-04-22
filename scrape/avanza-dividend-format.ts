@@ -10,6 +10,10 @@ if (!require('fs').existsSync(outputDir)){
 
 const saveFiles = [
   {
+    filename: outputDir + '/dividend2019.txt',
+    year: 2019
+  },
+  {
     filename: outputDir + '/dividend2021.txt',
     year: 2021
   },
@@ -45,6 +49,8 @@ Promise.all([
   .then(rows => rows.map(row => ({ ...row, xDate: moment(row.xDate) })))
   .then((dividends) => {
     const filename = outputDir + '/dividend-latest.txt'
+    const filenameCopy = outputDir + '/dividend-latest-copy.txt'
+
     const rows = dividends
       .sort((a, b) => b.xDate - a.xDate)
 
@@ -60,7 +66,9 @@ Promise.all([
 
     const dividendsFormatted = filteredDividends.map(dividend => [dividend.name, dividend.key, dividend.amount, dividend.xDate.format('YYYY-MM-DD')])
       .map(dividend => dividend.join('\t'))
-
-    fs.writeFile(filename, dividendsFormatted.join('\n'))
+    
+    return fs
+      .rename(filename, filenameCopy)
+      .then(() => fs.writeFile(filename, dividendsFormatted.join('\n')))
   })
   .catch(error => console.log('error', error))

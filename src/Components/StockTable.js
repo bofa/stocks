@@ -98,7 +98,7 @@ function component (props) {
               {company.getIn(['Name'])}
             </td>
             <td>{(100*company.getIn(['estimate'])).toFixed(2) + '%'}</td>
-            <td>{(100*company.getIn(['yield'])).toFixed(1) + '%'}</td>
+            <td>{Math.round(1000*company.getIn(['yield'])) / 10 + '%'}</td>
             <td>{company.getIn(['pe']).toFixed(2)}</td>
             <td>{(100*company.getIn(['avgDividendRatio'])).toFixed(1) + '%'}</td>
             <td>{company.getIn(['fitt']).toFixed(2)}</td>

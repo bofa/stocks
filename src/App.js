@@ -10,6 +10,15 @@ import { dividendEstimate, leastSquarceEstimate } from './Services/statistics'
 
 // TODO https://reacttraining.com/react-router/web/guides/scroll-restoration
 
+const convertArrayToObject = (array, key) =>
+  array.reduce(
+    (obj, item) => ({
+      ...obj,
+      [item[key]]: item
+    }),
+    {}
+  );
+
 class Routes extends React.Component {
 
   constructor() {
@@ -26,13 +35,13 @@ class Routes extends React.Component {
       earningsGrowth: true,
       netBrowingDecline: true,
 
-      fittRange: [0, 1],
+      fittRange: [0.5, 1],
       dividendRatioRange: [0, 1],
       peRange: [0, 50],
       yieldRange: [0, 0.2],
 
-      projectionTime: 5,
-      estimationTime: 4,
+      estimationTime: 6,
+      projectionTime: 4,
 
       ...JSON.parse(localStorageFilterSettings),
 
@@ -55,7 +64,20 @@ class Routes extends React.Component {
             return acc;
           }, {})))
 
-    getEarnings$.then(companies => this.setState({ companiesExternal: companies }))
+    const getEarnings2$ = axios
+      .get('https://bofa.github.io/stocks/earnings2.json')
+      // .get('/earnings2.json')
+      .then(response => fromJS(response.data
+          .reduce((acc, cur, i) => {
+            acc[cur.ShortName] = cur;
+            return acc;
+          }, {})))
+
+    getEarnings2$.then(result => console.log('result', result.toJS()));
+
+    Promise.all([getEarnings$, getEarnings2$])
+      .then(companies => this.setState({ companiesExternal: companies[0].concat(companies[1]) }))
+      // .then(companies => this.setState({ companiesExternal: companies[1] }))
 
     const getAmazingSheets$ = axios.get('https://spreadsheets.google.com/feeds/list/183-e_Hf_ZLD4D-91TtqpI35C6TQO_HanD-NKg-XjvAY/od6/public/values?alt=json')
       .then(response => response.data.feed.entry
@@ -69,10 +91,12 @@ class Routes extends React.Component {
           sheetsPrice,
         ])
         .filter(d => d[0])
-        .map(([company, sheetsPrice]) => [company.get('ShortName'), { price: sheetsPrice }])
+        .map(([company, sheetsPrice]) => ({ ShortName: company.get('ShortName'), price: Number(sheetsPrice) }))
       )
-      .then(d => new Map(d))
-      .then(companiesSheets => this.setState({ companiesSheets }))
+      .then(d => fromJS(convertArrayToObject(d, 'ShortName')))
+      .then(companiesSheets => {
+        this.setState({ companiesSheets })
+      })
   }
 
   render() {
@@ -97,7 +121,7 @@ class Routes extends React.Component {
       return null
     }
 
-    // console.log('state', this.state)
+    // console.log('state', this.state.companiesExternal.toJS(), companiesInternal.toJS(), companiesSheets.toJS())
 
     const mergedCompanies = companiesExternal
       // .filter(company => company.has('earnings') && company.get('earnings').size >= estimationTime )
@@ -120,7 +144,7 @@ class Routes extends React.Component {
         const estimate = new Array(projectionTime)
           .fill(0)
           .map((v, i) => company.getIn(['estimateAdjusted', '' + i]) || estimateFunc(i))
-          .reduce((s, v) => s+v)
+          .reduce((s, v) => s + v)
           / projectionTime
 
         const revenueLs  = leastSquarceEstimate(company.get('revenue').slice(-estimationTime).toJS())
@@ -149,14 +173,6 @@ class Routes extends React.Component {
         yieldRange, netBrowingDecline
       }
     
-      const fittValues = mergedCompanies
-        .map(c => c.get('fitt'))
-        .filter(v => !isNaN(v))
-  
-      // const peValues = mergedCompanies
-      //   .map(c => c.get('pe'))
-      //   .filter(v => !isNaN(v))
-  
       const yieldValues = mergedCompanies
         .map(c => c.get('yield'))
         .filter(v => !isNaN(v))

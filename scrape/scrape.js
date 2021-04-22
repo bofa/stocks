@@ -52,27 +52,27 @@ function consolePipe (pipe, override) {
 function call(comp) {
   return Promise.all([axios.get(`https://borsdata.se/api/AnalysisReport?analysisTime=0&analysisType=1&companyUrl=${comp.CountryUrlName}`, { headers: { Cookie }})
       .then(r => r.data)
-      .catch(() => consolePipe('Error1!' + comp.CountryUrlName, [])),
+      .catch(() => consolePipe('Error1! ' + comp.CountryUrlName, [])),
     axios.get(`https://borsdata.se/api/AnalysisHighChartSeries?analysisTime=0&companyUrl=${comp.CountryUrlName}&kpiId=63`, {
         headers: { Cookie }})
       .then(r => r.data)
-      .catch(error => consolePipe('Error2!' + error + comp.CountryUrlName, {})),
+      .catch(error => consolePipe('Error2! ' + error + comp.CountryUrlName, {})),
     axios.get(`https://borsdata.se/api/AnalysisHighChartSeries?analysisTime=0&companyUrl=${comp.CountryUrlName}&kpiId=60`,{
         headers: { Cookie }})
       .then(r => r.data)
-      .catch(error => consolePipe('Error3!' + error + comp.CountryUrlName, {})),
+      .catch(error => consolePipe('Error3! ' + error + comp.CountryUrlName, {})),
     axios.get(`https://borsdata.se/api/highchart?companyUrlName=${comp.CountryUrlName}`)
       .then(r => r.data)
       .then(formatStockPriceData)
-      .catch(() => {}),
+      .catch(() => consolePipe('Error4! ' + error + comp.CountryUrlName, {})),
     axios.get(`https://borsdata.se/api/AnalysisHighChartSeries?analysisTime=0&companyUrl=${comp.CountryUrlName}&kpiId=61`,{
         headers: { Cookie }})
       .then(r => r.data)
-      .catch(error => consolePipe('Error4!' + error + comp.CountryUrlName, {})),
+      .catch(error => consolePipe('Error5! ' + error + comp.CountryUrlName, {})),
     axios.get(`https://borsdata.se/api/AnalysisHighChartSeries?analysisTime=0&companyUrl=${comp.CountryUrlName}&kpiId=137`,{
         headers: { Cookie }})
       .then(r => r.data)
-      .catch(error => consolePipe('Error3!' + error + comp.CountryUrlName, {}))
+      .catch(error => consolePipe('Error6! ' + error + comp.CountryUrlName, {}))
   ]);
 }
 

@@ -1,6 +1,10 @@
 import writeJsonFile from 'write-json-file';
+import axiosRetry from 'axios-retry';
+
 const cheerio = require('cheerio');
 const axios = require('axios');
+
+axiosRetry(axios, { retries: 3 });
 
 function sleeper(ms) {
   return function(x) {
