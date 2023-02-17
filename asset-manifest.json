@@ -1,26 +1,19 @@
 {
   "files": {
-    "main.css": "/stocks/static/css/main.498d002a.chunk.css",
-    "main.js": "/stocks/static/js/main.dcc175f5.chunk.js",
-    "main.js.map": "/stocks/static/js/main.dcc175f5.chunk.js.map",
-    "runtime-main.js": "/stocks/static/js/runtime-main.b54bfc7f.js",
-    "runtime-main.js.map": "/stocks/static/js/runtime-main.b54bfc7f.js.map",
-    "static/css/2.b44cdbb5.chunk.css": "/stocks/static/css/2.b44cdbb5.chunk.css",
-    "static/js/2.e0b1ac6a.chunk.js": "/stocks/static/js/2.e0b1ac6a.chunk.js",
-    "static/js/2.e0b1ac6a.chunk.js.map": "/stocks/static/js/2.e0b1ac6a.chunk.js.map",
+    "main.css": "/stocks/static/css/main.f84e9a3b.css",
+    "main.js": "/stocks/static/js/main.bb9da05d.js",
+    "static/media/icons-20.eot": "/stocks/static/media/icons-20.cde033c5d3f24283f757.eot",
+    "static/media/icons-20.woff": "/stocks/static/media/icons-20.1ef633d3a28d0986f63e.woff",
+    "static/media/icons-20.ttf": "/stocks/static/media/icons-20.57b3e708b232fdcb64f9.ttf",
+    "static/media/icons-16.eot": "/stocks/static/media/icons-16.2368f88a078780d80145.eot",
+    "static/media/icons-16.woff": "/stocks/static/media/icons-16.1645f50fb7f7c109f64e.woff",
+    "static/media/icons-16.ttf": "/stocks/static/media/icons-16.13933033991f62d6bb64.ttf",
     "index.html": "/stocks/index.html",
-    "precache-manifest.038804ff65673726953f09e88fa4f661.js": "/stocks/precache-manifest.038804ff65673726953f09e88fa4f661.js",
-    "service-worker.js": "/stocks/service-worker.js",
-    "static/css/2.b44cdbb5.chunk.css.map": "/stocks/static/css/2.b44cdbb5.chunk.css.map",
-    "static/css/main.498d002a.chunk.css.map": "/stocks/static/css/main.498d002a.chunk.css.map",
-    "static/js/2.e0b1ac6a.chunk.js.LICENSE.txt": "/stocks/static/js/2.e0b1ac6a.chunk.js.LICENSE.txt",
-    "static/media/blueprint-icons.css": "/stocks/static/media/icons-20.cef8cdbb.woff"
+    "main.f84e9a3b.css.map": "/stocks/static/css/main.f84e9a3b.css.map",
+    "main.bb9da05d.js.map": "/stocks/static/js/main.bb9da05d.js.map"
   },
   "entrypoints": [
-    "static/js/runtime-main.b54bfc7f.js",
-    "static/css/2.b44cdbb5.chunk.css",
-    "static/js/2.e0b1ac6a.chunk.js",
-    "static/css/main.498d002a.chunk.css",
-    "static/js/main.dcc175f5.chunk.js"
+    "static/css/main.f84e9a3b.css",
+    "static/js/main.bb9da05d.js"
   ]
 }
