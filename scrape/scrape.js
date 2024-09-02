@@ -3,39 +3,189 @@ import { fromJS, List, Map } from 'immutable';
 import writeJsonFile from 'write-json-file';
 import { leastSquarceEstimate } from '../src/Services/statistics';
 import axiosRetry from 'axios-retry';
-import { cookie as Cookie } from './keys';
 
 axiosRetry(axios, { retries: 3 });
 
-function toNumber (string) {
-  return Number(string
-    .replace(',', '.')
-    .replace(/\s/g, ''));
+const startTime = new Date();
+
+axios.post('https://borsdata.se/api/terminal/screener/kpis/data', {
+  "page": 0,
+  "rowsInPage": 5000,
+  "nameFilter": "",
+  "kpiFilter": [
+    {
+      "kpiId": 7,
+      "calculation": 0,
+      "calcTime": 0,
+      "categoryId": 11,
+      "calculationType": 3,
+      "lowPrice": null,
+      "highPrice": null
+    },
+    {
+      "kpiId": 151,
+      "calculation": 20,
+      "calcTime": 1,
+      "categoryId": 9,
+      "calculationType": 2,
+      "lowPrice": null,
+      "highPrice": null
+    },
+    {
+      "kpiId": 151,
+      "calculation": 20,
+      "calcTime": 6,
+      "categoryId": 9,
+      "calculationType": 2,
+      "lowPrice": null,
+      "highPrice": null
+    },
+    {
+      "kpiId": 1,
+      "calculation": 1,
+      "calcTime": 0,
+      "categoryId": 0,
+      "calculationType": 2,
+      "lowPrice": null,
+      "highPrice": null
+    },
+    {
+      "kpiId": 2,
+      "calculation": 1,
+      "calcTime": 0,
+      "categoryId": 0,
+      "calculationType": 2,
+      "lowPrice": null,
+      "highPrice": null
+    },
+    {
+      "kpiId": 3,
+      "calculation": 1,
+      "calcTime": 0,
+      "categoryId": 0,
+      "calculationType": 2,
+      "lowPrice": null,
+      "highPrice": null
+    },
+    {
+      "kpiId": 4,
+      "calculation": 1,
+      "calcTime": 0,
+      "categoryId": 0,
+      "calculationType": 2,
+      "lowPrice": null,
+      "highPrice": null
+    },
+    {
+      "kpiId": 12,
+      "calculation": 0,
+      "calcTime": 0,
+      "categoryId": 11,
+      "calculationType": 3,
+      "lowPrice": null,
+      "highPrice": null
+    },
+    {
+      "kpiId": 2,
+      "calculation": 0,
+      "calcTime": 0,
+      "categoryId": 11,
+      "calculationType": 3,
+      "lowPrice": null,
+      "highPrice": null
+    },
+    {
+      "kpiId": 1,
+      "calculation": 0,
+      "calcTime": 0,
+      "categoryId": 11,
+      "calculationType": 3,
+      "lowPrice": null,
+      "highPrice": null
+    },
+    {
+      "kpiId": 5,
+      "calculation": 0,
+      "calcTime": 0,
+      "categoryId": 11,
+      "calculationType": 3,
+      "lowPrice": null,
+      "highPrice": null
+    }
+  ],
+  "watchlistId": null,
+  "selectedCountries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "companyNameOrdering": 0
+})
+.then(response => response.data.data)
+.then(companyNames => Promise.all(companyNames
+  // .filter((v, index) => index < 1)
+  // .filter((v, index) => index < 30)
+  // .filter((v, index) => v.name === 'Hennes & Mauritz')
+  .map((comp, index) => delayApiCall(comp, 365*index, index)
+    .then(response => {
+      // console.log('response', response);
+
+      if(index % 10 === 0) {
+        const currentTimeMin = (new Date() - startTime) / 1000 / 60;
+        console.log(index, Math.round(100 * index/companyNames.length) + '%', Math.round(currentTimeMin) + 'min', comp.name);
+      }
+      return { comp, quaterly: response[0], price: response[1] };
+    })
+    .catch(error => {
+      console.error('error', error)
+      return { comp }
+    })
+  )
+))
+.then(response => writeJsonFile('scrape/quaterly.json', response, { indent: 2 }))
+.then(() => console.log('done quaterly'))
+.catch(error => console.error('error', error));
+
+function delayApiCall(comp, delay = 20000) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => call(comp)
+      .then(
+        response => resolve(response),
+        reason => reject(reason))
+    , delay);
+  });
 }
 
-function formatAnalysisReport(response) {
-  return fromJS(response.data).update('Rows', rows => rows.map(row => row.update('Data', data => data.map(toNumber))));
-}
+function call(comp) {
+  const id = comp.companyId;
+  const quaterly$ =  axios.post(`https://borsdata.se/api/terminal/instruments/${id}/analysis/history`, 
+  // return axios.post(`https://borsdata.se/api/terminal/instruments/${comp.companyId}/estimations/kpisHistory`, 
+    {
+      "periodType": 0,
+      "years": 10,  
+      "kpis": [1, 7, 53, 56, 60, 61, 63, 137].map(id => ({
+        id,
+        "priceType": 1,
+        "growthCalcType": 0
+      }))
+    })
+    .then(r => r.data);
 
-function formatKpisResponseSingle (response) {
-  const data = fromJS(response.data);
+  const priceHistory$ = axios.get(`https://borsdata.se/api/instrumentsbasic/instruments/${id}/ratios/widgets/spHistWd?interval=all&index=627`)
+    .then(r => r.data.chartData.valuesStockPrice)
+    .then(price => formatStockPriceData(price))
 
-  // const Sparkline = data.get('Data').map((value, index, array) => new Map({
-  //   year: currentYear + index - array.length,
-  //   yield: Number(value)
-  // }));
-
-  // return data.set('Sparkline', Sparkline);
-  return data;
+  return Promise.all([quaterly$, priceHistory$])
 }
 
 function formatStockPriceData (response) {
-  const range = fromJS(response).slice(-90).map(item => item.get('y'));
+  const range = fromJS(response).slice(-90);
   const { slope } = leastSquarceEstimate(range.toJS());
   const relativeSlope = slope / range.get(-1);
 
   return {
-    price: response[response.length-1].y,
+    price: range.get(-1),
     stockPriceMomentum: relativeSlope
   };
 }
@@ -43,78 +193,9 @@ function formatStockPriceData (response) {
 function consolePipe (pipe, override) {
   console.log('pipe', pipe);
 
-  if(override) {
+  if (override) {
     return override;
   }
+
   return pipe;
 }
-
-function call(comp) {
-  return Promise.all([axios.get(`https://borsdata.se/api/AnalysisReport?analysisTime=0&analysisType=1&companyUrl=${comp.CountryUrlName}`, { headers: { Cookie }})
-      .then(r => r.data)
-      .catch(() => consolePipe('Error1! ' + comp.CountryUrlName, [])),
-    axios.get(`https://borsdata.se/api/AnalysisHighChartSeries?analysisTime=0&companyUrl=${comp.CountryUrlName}&kpiId=63`, {
-        headers: { Cookie }})
-      .then(r => r.data)
-      .catch(error => consolePipe('Error2! ' + error + comp.CountryUrlName, {})),
-    axios.get(`https://borsdata.se/api/AnalysisHighChartSeries?analysisTime=0&companyUrl=${comp.CountryUrlName}&kpiId=60`,{
-        headers: { Cookie }})
-      .then(r => r.data)
-      .catch(error => consolePipe('Error3! ' + error + comp.CountryUrlName, {})),
-    axios.get(`https://borsdata.se/api/highchart?companyUrlName=${comp.CountryUrlName}`)
-      .then(r => r.data)
-      .then(formatStockPriceData)
-      .catch(() => consolePipe('Error4! ' + error + comp.CountryUrlName, {})),
-    axios.get(`https://borsdata.se/api/AnalysisHighChartSeries?analysisTime=0&companyUrl=${comp.CountryUrlName}&kpiId=61`,{
-        headers: { Cookie }})
-      .then(r => r.data)
-      .catch(error => consolePipe('Error5! ' + error + comp.CountryUrlName, {})),
-    axios.get(`https://borsdata.se/api/AnalysisHighChartSeries?analysisTime=0&companyUrl=${comp.CountryUrlName}&kpiId=137`,{
-        headers: { Cookie }})
-      .then(r => r.data)
-      .catch(error => consolePipe('Error6! ' + error + comp.CountryUrlName, {}))
-  ]);
-}
-
-function delayApiCall(comp, delay = 20000) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => call(comp)
-    .then(
-      response => resolve(response),
-      reason => reject(reason)),
-      delay);
-  });
-}
-
-axios.post('https://borsdata.se/complist/GetCompanies', {
-  "filter":{
-    "KpiFilter":[{
-      "CategoryId": 9,
-      "AdditionalId": 151,
-      "KpiId": 151,
-      "CalculationType": 2,
-      "Calculation": 20,
-      "CalcTime": 1
-    }],
-    "SelectedMarkets": [],
-    "SelectedCountries": [1,2,3,4],
-    "Page": 0,
-    "RowsInPage": 10000,
-    "ShowOnlySme": false,
-    "ShowOnlyIntroduce": false,
-    "CompanyNameOrdering": 0
-  }})
-  .then(response => response.data.data)
-  .then(companyNames => Promise.all(companyNames
-    // .filter((v, index) => index < 1)
-    // .filter((v, index) => index < 15)
-    // .filter((v, index) => v.Name === 'Amazon')
-    .map((comp, index) => delayApiCall(comp, 4000*index, index)
-      .then(response => {
-        if(index % 10 === 0) {
-          console.log(index, Math.round(100 * index/companyNames.length) + '%', comp.CountryUrlName);
-        }
-        return {comp, quaterly: response};
-      }))))
-  .then(response => writeJsonFile('scrape/quaterly.json', response))
-  .then(() => console.log('done quaterly'));

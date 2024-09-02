@@ -51,31 +51,31 @@ class Routes extends React.Component {
         : Map(),
       companiesSheets: Map()
     }
-
   }
 
   componentDidMount() {
     const getEarnings$ = axios
-      .get('https://bofa.github.io/stocks/earnings.json')
-      // .get('/earnings.json')
+      // .get('https://bofa.github.io/stocks/earnings.json')
+      .get('./earnings.json')
       .then(response => fromJS(response.data
-          .reduce((acc, cur, i) => {
-            acc[cur.ShortName] = cur;
-            return acc;
-          }, {})))
+        .reduce((acc, cur, i) => {
+          acc[cur.ShortName] = cur;
+          return acc;
+        }, {})))
 
     const getEarnings2$ = axios
       .get('https://bofa.github.io/stocks/earnings2.json')
       // .get('/earnings2.json')
       .then(response => fromJS(response.data
-          .reduce((acc, cur, i) => {
-            acc[cur.ShortName] = cur;
-            return acc;
-          }, {})))
+        .reduce((acc, cur, i) => {
+          acc[cur.ShortName] = cur;
+          return acc;
+        }, {})))
 
     getEarnings2$.then(result => console.log('result', result.toJS()));
 
-    Promise.all([getEarnings$, getEarnings2$])
+    // Promise.all([getEarnings$, getEarnings2$])
+    Promise.all([getEarnings$])
       .then(companies => this.setState({ companiesExternal: companies[0].concat(companies[1]) }))
       // .then(companies => this.setState({ companiesExternal: companies[1] }))
 
@@ -229,7 +229,7 @@ class Routes extends React.Component {
 
           <Checkbox checked={revenueGrowth} inline label="Revenue Growth" onChange={e => this.setState({ revenueGrowth: e.target.checked })} />
           <Checkbox checked={earningsGrowth} inline label="Earnings Growth" onChange={e => this.setState({ earningsGrowth: e.target.checked })} />
-          <Checkbox checked={netBrowingDecline} inline label="Net Borow Decline" onChange={e => this.setState({ netBrowingDecline: e.target.checked })} />
+          <Checkbox checked={netBrowingDecline} inline label="Net Borrow Decline" onChange={e => this.setState({ netBrowingDecline: e.target.checked })} />
 
           <Popover content={
             <div width={200} style={{ padding: 10 }}>
