@@ -29,6 +29,10 @@ const saveFiles = [
     filename: outputDir + '/dividend2024.txt',
     year: 2024
   },
+  {
+    filename: outputDir + '/dividend2025.txt',
+    year: 2025
+  },
 ]
 
 // Output year
@@ -63,6 +67,7 @@ Promise.all([
 
     const rows = dividends
       .sort((a, b) => b.xDate - a.xDate)
+      .filter(d => d.xDate.isAfter(moment().subtract(2, 'years')))
 
     const filteredDividends = rows.map(row => row.key)
       .filter((value, index, self) => self.indexOf(value) === index)

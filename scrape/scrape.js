@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { fromJS, List, Map } from 'immutable';
+import { fromJS } from 'immutable';
 import writeJsonFile from 'write-json-file';
 import { leastSquarceEstimate } from '../src/Services/statistics';
 import axiosRetry from 'axios-retry';
@@ -7,6 +7,8 @@ import axiosRetry from 'axios-retry';
 axiosRetry(axios, { retries: 3 });
 
 const startTime = new Date();
+
+const Cookie = ''
 
 axios.post('https://borsdata.se/api/terminal/screener/kpis/data', {
   "page": 0,
@@ -169,10 +171,10 @@ function call(comp) {
         "priceType": 1,
         "growthCalcType": 0
       }))
-    })
+    }, { headers: { Cookie } })
     .then(r => r.data);
 
-  const priceHistory$ = axios.get(`https://borsdata.se/api/instrumentsbasic/instruments/${id}/ratios/widgets/spHistWd?interval=all&index=627`)
+  const priceHistory$ = axios.get(`https://borsdata.se/api/instrumentsbasic/instruments/${id}/ratios/widgets/spHistWd?interval=all&index=627`, { headers: { Cookie } })
     .then(r => r.data.chartData.valuesStockPrice)
     .then(price => formatStockPriceData(price))
 
